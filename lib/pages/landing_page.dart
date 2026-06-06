@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loan_admin/components/button.dart';
 import 'package:loan_admin/components/text.dart';
 import 'package:loan_admin/pages/applications_page.dart';
+import 'package:loan_admin/pages/loans_page.dart';
+import 'package:loan_admin/pages/users_page.dart';
 import '../bloc/navigation_bloc.dart';
 import 'dashboard.dart';
 
@@ -16,7 +18,7 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage> {
 
-  late int selectedIndex;
+  int selectedIndex = 0;
 
   final List<DashboardMenuItem> menuItems = [
 
@@ -26,9 +28,19 @@ class _LandingPageState extends State<LandingPage> {
     ),
 
     DashboardMenuItem(
+      title: 'Loans',
+      icon: Icons.credit_card
+    ),
+
+    DashboardMenuItem(
       title: 'Loan Applications',
       icon: Icons.edit_note,
     ),
+
+    DashboardMenuItem(
+      title: 'Users',
+      icon: Icons.people
+    )
 
   ];
 
@@ -42,11 +54,12 @@ class _LandingPageState extends State<LandingPage> {
 
     fragments = [
       DashboardPage(),
-      LoanApplicationPage()
+      LoansPage(),
+      LoanApplicationPage(),
+      UsersPage()
     ];
 
-    selectedIndex = 0;
-    context.read<NavigationCubit>().pushReplacement(fragments[0]);
+    context.read<NavigationCubit>().push(fragments[0]);
 
   }
 
@@ -107,21 +120,24 @@ class _LandingPageState extends State<LandingPage> {
               ],
             ),
           ),
+
+
           const Divider(height: 1),
+
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(12),
               itemCount: menuItems.length,
               itemBuilder: (_, index) {
+
                 final item = menuItems[index];
                 final isSelected = selectedIndex == index;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 6),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
+                  child: GestureDetector(
                     onTap: () {
-                      selectedIndex = index;
+                      setState(() => selectedIndex = index);
                       context.read<NavigationCubit>().pushReplacement(fragments[index]);
                     },
                     child: AnimatedContainer(
@@ -158,51 +174,67 @@ class _LandingPageState extends State<LandingPage> {
               },
             ),
           ),
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.green.shade50,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Row(
+
+          _buildCurrentUserCard()
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildCurrentUserCard(){
+
+    return  Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+
+          _buildProfileAvatar(),
+
+          const SizedBox(width: 12),
+
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: Colors.green.shade200,
-                  child: Text(
-                    "Q",
-                    style: TextStyle(
-                      color: Colors.green.shade900,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                //todo: put the username here.
+                CustomText(
+                  "Quin Sefalloyd",
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      //todo: put the username here.
-                      CustomText(
-                        "Quin Sefalloyd",
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        "Administrator",
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                    ],
-                  ),
+                SizedBox(height: 4),
+                Text(
+                  "Administrator",
+                  style: TextStyle(color: Colors.black54),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+
+  Widget _buildProfileAvatar(){
+
+    return CircleAvatar(
+      radius: 22,
+      backgroundColor: Colors.green.shade200,
+      child: Text(
+        "Q",
+        style: TextStyle(
+          color: Colors.green.shade900,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

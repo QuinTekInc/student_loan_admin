@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:loan_admin/components/text.dart';
 import 'package:loan_admin/models/models.dart';
+import 'package:loan_admin/pages/dialogs/application_approval_dialog.dart';
 
-class LoanApplicationReview extends StatelessWidget {
+class LoanApplicationReview extends StatefulWidget {
   final LoanApplication application;
 
   const LoanApplicationReview({
@@ -10,6 +11,11 @@ class LoanApplicationReview extends StatelessWidget {
     required this.application,
   });
 
+  @override
+  State<LoanApplicationReview> createState() => _LoanApplicationReviewState();
+}
+
+class _LoanApplicationReviewState extends State<LoanApplicationReview> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -23,19 +29,19 @@ class LoanApplicationReview extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          Row( 
+          Row(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
-              Expanded( 
+
+              Expanded(
                 child: _buildFirstCol(),
-              ), 
-              
-              Expanded( 
+              ),
+
+              Expanded(
                 child: _buildSecondCol(),
               )
-              
+
             ],
           ),
 
@@ -64,7 +70,7 @@ class LoanApplicationReview extends StatelessWidget {
             children: [
 
               ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: handleApproveLoan,
                 icon: const Icon(Icons.check),
                 label: const Text("Approve"),
               ),
@@ -72,7 +78,7 @@ class LoanApplicationReview extends StatelessWidget {
               const SizedBox(width: 16),
 
               ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: handleRejectLoan,
                 icon: const Icon(Icons.close),
                 label: const Text("Reject"),
               ),
@@ -120,12 +126,12 @@ class LoanApplicationReview extends StatelessWidget {
 
           _infoTile(
             "Amount Requested",
-            "GHS ${application.amountRequested}",
+            "GHS ${widget.application.amountRequested}",
           ),
 
           _infoTile(
             "Loan Reason",
-            application.loanReason,
+            widget.application.loanReason,
           ),
         ],
       ),
@@ -191,15 +197,15 @@ class LoanApplicationReview extends StatelessWidget {
         runSpacing: 12,
         children: [
 
-          _infoTile("Application ID", application.applicationId),
-          _infoTile("Student ID", application.studentId),
-          _infoTile("Status", application.status),
-          _infoTile("Created", application.createdAt.toString()),
+          _infoTile("Application ID", widget.application.applicationId),
+          _infoTile("Student ID", widget.application.studentId),
+          _infoTile("Status", widget.application.status),
+          _infoTile("Created", widget.application.createdAt.toString()),
         ],
       ),
     );
   }
-  
+
   //===================FIRST COLUMN ===================
   Widget _buildFirstCol(){
     return Column(
@@ -208,23 +214,22 @@ class LoanApplicationReview extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       spacing: 20,
       children: [
-        
+
         //application progress summary
         _buildSummaryInformation(),
-        
+
         //personal information,
         _buildPersonalInformation(),
-        
+
         //parental information,
         _buildParentalInformation(),
-        
+
         //academic information
         _buildAcademicinformation()
-        
+
       ],
     );
   }
-
 
   Widget _buildSecondCol(){
     return Column(
@@ -237,13 +242,10 @@ class LoanApplicationReview extends StatelessWidget {
         _buildLoanInformation(),
         _fraudSection(),
         _buildDocumentsInformation(),
-        
+
       ],
     );
   }
-  
-  
-  
 
   // ================= FRAUD SECTION =================
   Widget _fraudSection() {
@@ -376,5 +378,16 @@ class LoanApplicationReview extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void handleApproveLoan(){
+    showDialog(
+      context: context,
+      builder: (_) => LoanApprovalDialog()
+    );
+  }
+
+  void handleRejectLoan(){
+
   }
 }
