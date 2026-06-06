@@ -1,17 +1,16 @@
 
 import 'package:flutter/material.dart';
-import 'package:student_loan/pages/student_portal/student_dashboard.dart';
 
 
-class AdminDashboardPage extends StatefulWidget {
+class DashboardPage extends StatefulWidget {
 
-  AdminDashboardPage({super.key});
+  DashboardPage({super.key});
 
   @override
-  State<AdminDashboardPage> createState() => _AdminDashboardPageState();
+  State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _AdminDashboardPageState extends State<AdminDashboardPage> {
+class _DashboardPageState extends State<DashboardPage> {
 
   int selectedIndex = 0;
 
@@ -299,4 +298,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
+}
+
+
+class DashboardStat{
+  IconData icon;
+  String title;
+  String subtitle;
+  String value;
+
+  DashboardStat({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value
+  });
 }

@@ -1,8 +1,11 @@
 
 import 'package:flutter/material.dart';
-import 'package:student_loan/components/button.dart';
-
-import 'admin_dashboard.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/components/button.dart';
+import 'package:loan_admin/components/text.dart';
+import 'package:loan_admin/pages/applications_page.dart';
+import '../bloc/navigation_bloc.dart';
+import 'dashboard.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -13,13 +16,18 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage> {
 
-  int selectedIndex = 0;
+  late int selectedIndex;
 
   final List<DashboardMenuItem> menuItems = [
 
     DashboardMenuItem(
       title: 'Dashboard',
       icon: Icons.dashboard,
+    ),
+
+    DashboardMenuItem(
+      title: 'Loan Applications',
+      icon: Icons.edit_note,
     ),
 
   ];
@@ -33,8 +41,12 @@ class _LandingPageState extends State<LandingPage> {
     super.initState();
 
     fragments = [
-      AdminDashboardPage()
+      DashboardPage(),
+      LoanApplicationPage()
     ];
+
+    selectedIndex = 0;
+    context.read<NavigationCubit>().pushReplacement(fragments[0]);
 
   }
 
@@ -48,8 +60,11 @@ class _LandingPageState extends State<LandingPage> {
           buildSidebar(),
 
           Expanded(
-            child: fragments[selectedIndex],
+            child: BlocBuilder<NavigationCubit, Widget>(
+              builder: (context, state) => state
+            ),
           )
+
         ]
       ),
     );
@@ -106,10 +121,8 @@ class _LandingPageState extends State<LandingPage> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(14),
                     onTap: () {
-                      setState(() {
-                        selectedIndex = index;
-                      });
-
+                      selectedIndex = index;
+                      context.read<NavigationCubit>().pushReplacement(fragments[index]);
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
@@ -118,30 +131,22 @@ class _LandingPageState extends State<LandingPage> {
                         vertical: 14,
                       ),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? Colors.green.shade50
-                            : Colors.transparent,
+                        color: isSelected ? Colors.green.shade50 : Colors.transparent,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             item.icon,
-                            color: isSelected
-                                ? Colors.green.shade700
-                                : Colors.black54,
+                            color: isSelected ? Colors.green.shade700 : Colors.black54,
                           ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Text(
                               item.title,
                               style: TextStyle(
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: isSelected
-                                    ? Colors.green.shade800
-                                    : Colors.black87,
+                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                color: isSelected ? Colors.green.shade800 : Colors.black87,
                               ),
                             ),
                           ),
@@ -177,9 +182,15 @@ class _LandingPageState extends State<LandingPage> {
                 const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text("Quin Sefalloyd",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      //todo: put the username here.
+                      CustomText(
+                        "Quin Sefalloyd",
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                       SizedBox(height: 4),
                       Text(
                         "Administrator",

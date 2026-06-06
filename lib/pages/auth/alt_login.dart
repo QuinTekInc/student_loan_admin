@@ -2,12 +2,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:student_loan/pages/auth/signup.dart';
-import 'package:student_loan/router/app_router.dart';
+import 'package:loan_admin/router/app_router.dart';
 
-import '../../bloc/auth_cubit.dart';
+import '../../bloc/auth_bloc.dart';
 import '../../components/text.dart';
-import '../student_portal/std_landing_page.dart';
+import '../landing_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,6 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   final passwordController = TextEditingController();
 
   double get maxWidth {
+
     final width = MediaQuery.of(context).size.width;
 
     if (width < 600) return width * 0.92; // mobile
@@ -38,12 +38,13 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state){
+
         if(state is AuthError){
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
               title: Text("Login Error"),
-              content: CustomText(state.errorMessage),
+              content: CustomText(state.message),
             )
           );
           return;
@@ -54,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => StudentLandingPage()
+              builder: (_) => LandingPage()
             )
           );
           return;
@@ -162,13 +163,15 @@ class _LoginPageState extends State<LoginPage> {
 
           const SizedBox(height: 10),
 
+          //TODO: navigate to the "ForgotPassword" page when the forgot password is pressed.
+          //instead of using an empty placeholder.
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: ()  => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SignupPage()
+                  builder: (context) => Placeholder()
                 )
               ),
               child: const Text(
@@ -202,23 +205,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          const SizedBox(height: 14),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CustomText("Don't have an account? ", fontSize: 15,),
-
-              TextButton(
-                onPressed: () => Navigator.pushNamed(context, AppRouter.signup),
-                child: CustomText(
-                  "Sign Up",
-                  textColor: Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              )
-            ],
-          )
         ],
       ),
     );
@@ -227,10 +213,8 @@ class _LoginPageState extends State<LoginPage> {
 
 
   void validateFields(){
-
     String username = usernameController.text;
     String password = passwordController.text;
-
     setState(() => disableButton = username.isEmpty || password.isEmpty);
   }
 
