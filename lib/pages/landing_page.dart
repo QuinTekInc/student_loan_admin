@@ -5,6 +5,7 @@ import 'package:loan_admin/components/button.dart';
 import 'package:loan_admin/components/text.dart';
 import 'package:loan_admin/pages/applications_page.dart';
 import 'package:loan_admin/pages/loans_page.dart';
+import 'package:loan_admin/pages/settings_page.dart';
 import 'package:loan_admin/pages/users_page.dart';
 import '../bloc/navigation_bloc.dart';
 import 'dashboard.dart';
@@ -40,6 +41,12 @@ class _LandingPageState extends State<LandingPage> {
     DashboardMenuItem(
       title: 'Users',
       icon: Icons.people
+    ),
+
+
+    DashboardMenuItem(
+      title: 'Settings',
+      icon: Icons.settings
     )
 
   ];
@@ -56,7 +63,9 @@ class _LandingPageState extends State<LandingPage> {
       DashboardPage(),
       LoansPage(),
       LoanApplicationPage(),
-      UsersPage()
+      UsersPage(),
+
+      SettingsPage(),
     ];
 
     context.read<NavigationCubit>().push(fragments[0]);
@@ -108,13 +117,11 @@ class _LandingPageState extends State<LandingPage> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
+
+                Expanded(
+                  child: HeaderText(
                     "Student Loans(Admin)",
-                    style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    fontSize: 19,
                   ),
                 )
               ],
@@ -151,19 +158,20 @@ class _LandingPageState extends State<LandingPage> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Icon(
                             item.icon,
                             color: isSelected ? Colors.green.shade700 : Colors.black54,
                           ),
                           const SizedBox(width: 14),
+
                           Expanded(
-                            child: Text(
+                            child: CustomText(
                               item.title,
-                              style: TextStyle(
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: isSelected ? Colors.green.shade800 : Colors.black87,
-                              ),
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                              textColor: isSelected ? Colors.green.shade800 : Colors.black87,
                             ),
                           ),
                         ],

@@ -1,10 +1,12 @@
 
 import 'package:flutter/material.dart';
 
+import '../components/text.dart';
+
 
 class DashboardPage extends StatefulWidget {
 
-  DashboardPage({super.key});
+  const DashboardPage({super.key});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -57,19 +59,16 @@ class _DashboardPageState extends State<DashboardPage> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
+              children: [
+                HeaderText(
                   "Admin Dashboard 👨‍💼",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  fontSize: 28,
+                  textColor: Colors.white
                 ),
                 SizedBox(height: 10),
-                Text(
+                CustomText(
                   "Manage student loans, applications, and platform activity.",
-                  style: TextStyle(color: Colors.white70),
+                  textColor: Colors.white70,
                 ),
               ],
             ),
@@ -150,25 +149,20 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Icon(item.icon, color: Colors.green.shade700),
           ),
           const Spacer(),
-          Text(
+          CustomText(
             item.title,
-            style: const TextStyle(color: Colors.black54),
+            textColor: Colors.black54,
           ),
           const SizedBox(height: 6),
-          Text(
+          CustomText(
             item.value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
           ),
           const SizedBox(height: 6),
-          Text(
+          CustomText(
             item.subtitle,
-            style: const TextStyle(
-              color: Colors.black54,
-              fontSize: 13,
-            ),
+            fontSize: 13,
           ),
         ],
       ),
@@ -177,7 +171,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
 
   Widget buildAdminMiddle() {
-
     return Row(
       children: [
         Expanded(flex: 2, child: buildRecentApplications()),
@@ -202,7 +195,7 @@ class _DashboardPageState extends State<DashboardPage> {
           return ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Icon(item.$1, color: Colors.green.shade700),
-            title: Text(item.$2),
+            title: CustomText(item.$2),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
           );
         }).toList(),
@@ -226,10 +219,10 @@ class _DashboardPageState extends State<DashboardPage> {
             contentPadding: EdgeInsets.zero,
             leading: CircleAvatar(
               backgroundColor: Colors.green.shade100,
-              child: Text(app.$1[0]),
+              child: CustomText(app.$1[0], fontSize: 18, fontWeight: FontWeight.w600,),
             ),
-            title: Text(app.$1),
-            subtitle: Text(app.$2),
+            title: CustomText(app.$1),
+            subtitle: CustomText(app.$2),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
           );
         }).toList(),
@@ -244,16 +237,40 @@ class _DashboardPageState extends State<DashboardPage> {
       title: "System Activity",
       child: Column(
         children: [
+
           ListTile(
-            title: Text("Loan approved for Ama Serwaa"),
+            leading: Icon(
+              Icons.history,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade600,
+              size: 30,
+            ),
+
+            title: CustomText("Loan approved for Ama Serwaa"),
             subtitle: Text("2 mins ago"),
           ),
+
           ListTile(
-            title: Text("New user registered"),
+            leading: Icon(
+              Icons.history,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade600,
+              size: 30,
+            ),
+
+            title: CustomText("New user registered"),
             subtitle: Text("10 mins ago"),
           ),
+
+
           ListTile(
-            title: Text("Payment received"),
+            leading: Icon(
+              Icons.history,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade600,
+              size: 30,
+            ),
+            title: CustomText("Payment received"),
             subtitle: Text("30 mins ago"),
           ),
         ],
@@ -284,12 +301,9 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          HeaderText(
             title,
-            style: const TextStyle(
-              fontSize: 19,
-              fontWeight: FontWeight.bold,
-            ),
+            fontSize: 19,
           ),
           const SizedBox(height: 22),
           child,

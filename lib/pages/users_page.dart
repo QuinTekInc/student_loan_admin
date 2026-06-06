@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loan_admin/components/text.dart';
-import 'package:loan_admin/pages/student_profile_page.dart';
+import 'package:loan_admin/pages/user_management/student_profile_page.dart';
 
 import '../bloc/navigation_bloc.dart';
 

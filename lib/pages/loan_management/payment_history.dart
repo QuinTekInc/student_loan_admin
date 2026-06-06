@@ -12,12 +12,11 @@ class PaymentHistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
           HeaderText("Payment History"),
@@ -31,15 +30,27 @@ class PaymentHistoryPage extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          _filters(),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                children: [
 
-          const SizedBox(height: 20),
+                  _summaryCards(),
 
-          _summaryCards(),
+                  const SizedBox(height: 20),
 
-          const SizedBox(height: 20),
+                  _filters(),
 
-          _paymentTable(),
+                  const SizedBox(height: 20),
+
+                  _paymentTable(),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

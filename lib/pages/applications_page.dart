@@ -1,8 +1,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:loan_admin/bloc/navigation_bloc.dart';
+import 'package:loan_admin/components/text.dart';
 import 'package:loan_admin/models/models.dart';
-import 'package:loan_admin/pages/loan_review.page.dart';
+import 'package:loan_admin/pages/application_management/loan_review.page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LoanApplicationPage extends StatefulWidget {
@@ -21,22 +22,18 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+
+          HeaderText(
             "Loan Applications",
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
+            fontSize: 30
           ),
 
           const SizedBox(height: 8),
 
-          const Text(
+          CustomText(
             "Review and manage student loan applications.",
-            style: TextStyle(
-              color: Colors.black54,
-              fontSize: 15,
-            ),
+            textColor: Colors.black54,
+            fontSize: 15,
           ),
 
           const SizedBox(height: 24),
@@ -129,18 +126,16 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+
+              CustomText(
                 value,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
-              Text(
+
+              CustomText(
                 title,
-                style: const TextStyle(
-                  color: Colors.black54,
-                ),
+                textColor: Colors.black54,
               )
             ],
           )
@@ -240,44 +235,43 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
             children: const [
               Expanded(
                 flex: 2,
-                child: Text(
+                child: CustomText(
                   "Application ID",
-                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               Expanded(
                 flex: 3,
-                child: Text(
+                child: CustomText(
                   "Student",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               Expanded(
                 flex: 3,
-                child: Text(
+                child: CustomText(
                   "Institution",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               Expanded(
                 flex: 2,
-                child: Text(
+                child: CustomText(
                   "Amount",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               Expanded(
                 flex: 2,
-                child: Text(
+                child: CustomText(
                   "Status",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               Expanded(
                 flex: 2,
-                child: Text(
+                child: CustomText(
                   "Actions",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -295,82 +289,80 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
   }
 
   Widget _applicationRow() {
-    return GestureDetector(
-      onTap: () => context.read<NavigationCubit>().push(LoanApplicationReview(
-        application: LoanApplication(
-          applicationId: '121434-12232345',
-          studentId: '121434-12232345',
-          status: 'pending',
-          amountRequested: 1500,
-          loanReason: 'To Pay off hostel Bills',
-          createdAt: DateTime.now()
-        ),
-      )),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        child: Row(
-          children: [
-            const Expanded(
-              flex: 2,
-              child: Text("APP-2026-001"),
-            ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        children: [
+          const Expanded(
+            flex: 2,
+            child: CustomText("APP-2026-001"),
+          ),
 
-            const Expanded(
-              flex: 3,
-              child: Text("Quin Sefalloyd"),
-            ),
+          const Expanded(
+            flex: 3,
+            child: CustomText("Quin Sefalloyd"),
+          ),
 
-            const Expanded(
-              flex: 3,
-              child: Text(
-                "University of Energy and Natural Resources",
+          const Expanded(
+            flex: 3,
+            child: CustomText(
+              "University of Energy and Natural Resources",
+            ),
+          ),
+
+          const Expanded(
+            flex: 2,
+            child: CustomText("GHS 18,000"),
+          ),
+
+          Expanded(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: CustomText(
+                "Pending",
+                textAlignment: TextAlign.center,
+                textColor: Colors.orange.shade800,
+                fontWeight: FontWeight.w600,
               ),
             ),
+          ),
 
-            const Expanded(
-              flex: 2,
-              child: Text("GHS 18,000"),
-            ),
+          Expanded(
+            flex: 2,
+            child: Row(
+              children: [
 
-            Expanded(
-              flex: 2,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Text(
-                  "Pending",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.orange.shade800,
-                    fontWeight: FontWeight.w600,
+                IconButton(
+                  icon: const Icon(Icons.visibility_outlined),
+                  onPressed: () => context.read<NavigationCubit>().push(LoanApplicationReview(
+                    application: LoanApplication(
+                      applicationId: '121434-12232345',
+                      studentId: '121434-12232345',
+                      status: 'pending',
+                      amountRequested: 1500,
+                      loanReason: 'To Pay off hostel Bills',
+                      createdAt: DateTime.now()),
+                    )
                   ),
                 ),
-              ),
-            ),
 
-            Expanded(
-              flex: 2,
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.visibility_outlined),
-                    onPressed: () {},
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.more_vert),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
+
+                IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  onPressed: () {},
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
