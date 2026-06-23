@@ -2,9 +2,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/bloc/applications_bloc.dart';
+import 'package:loan_admin/bloc/navigation_bloc.dart';
 import 'package:loan_admin/router/app_router.dart';
 
 import '../../bloc/auth_bloc.dart';
+import '../../bloc/users_bloc.dart';
 import '../../components/text.dart';
 import '../landing_page.dart';
 
@@ -52,10 +55,26 @@ class _LoginPageState extends State<LoginPage> {
 
 
         if(state is AuthAuthenticated){
+
+          //TODO: put this in the app router
+          //navigate to it by calling pushReplacementNamed.
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => LandingPage()
+              builder: (_) => MultiBlocProvider(
+                providers: [
+
+                  BlocProvider(
+                    create: (_) => LoanApplicationsCubit(),
+                  ),
+
+                  BlocProvider(
+                    create: (_) => UsersCubit()
+                  )
+
+                ],
+                child: LandingPage()
+              )
             )
           );
           return;

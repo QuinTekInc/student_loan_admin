@@ -64,7 +64,6 @@ class _LandingPageState extends State<LandingPage> {
       LoansPage(),
       LoanApplicationPage(),
       UsersPage(),
-
       SettingsPage(),
     ];
 

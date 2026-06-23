@@ -1,10 +1,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/bloc/users_bloc.dart';
+import 'package:loan_admin/components/placeholders.dart';
 import 'package:loan_admin/components/text.dart';
+import 'package:loan_admin/pages/user_management/admin_profile_page.dart';
 import 'package:loan_admin/pages/user_management/student_profile_page.dart';
 
 import '../bloc/navigation_bloc.dart';
+import '../models/models.dart';
 
 class UsersPage extends StatefulWidget {
   const UsersPage({super.key});
@@ -14,15 +18,58 @@ class UsersPage extends StatefulWidget {
 }
 
 class _UsersPageState extends State<UsersPage> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    context.read<UsersCubit>().fetchUsers();
+  }
+
   @override
   Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 12,
+        children: [
+
+          HeaderText("Users Management"),
+
+          Expanded(
+            child: BlocBuilder<UsersCubit, UsersState>(
+              builder: (_, state){
+
+                if(state is UsersLoading || state is UsersInitial){
+                  return LoadingPlaceholder();
+                }
+
+                if(state is UsersError){
+                  return MessagePlaceholder.error(
+                    message: state.message,
+                    onButtonPressed: () => context.read<UsersCubit>().fetchUsers(),
+                  );
+                }
+
+                return _buildContent();
+              }
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  SingleChildScrollView _buildContent() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          HeaderText("Users Management"),
 
           const SizedBox(height: 24),
 
@@ -40,14 +87,19 @@ class _UsersPageState extends State<UsersPage> {
     );
   }
 
+
+
   Widget _buildStatistics() {
+    
+    UsersLoaded loaded = context.read<UsersCubit>().state as UsersLoaded;
+    
     return Row(
       children: [
 
         Expanded(
           child: _statCard(
             "Total Users",
-            "2,543",
+            loaded.totalUsersCount.toString(),
             Icons.people_outline,
             Colors.blue,
           ),
@@ -58,7 +110,7 @@ class _UsersPageState extends State<UsersPage> {
         Expanded(
           child: _statCard(
             "Students",
-            "2,497",
+            loaded.studentUsersCount.toString(),
             Icons.school_outlined,
             Colors.green,
           ),
@@ -69,7 +121,7 @@ class _UsersPageState extends State<UsersPage> {
         Expanded(
           child: _statCard(
             "Admins",
-            "18",
+            loaded.adminUsersCount.toString(),
             Icons.admin_panel_settings_outlined,
             Colors.orange,
           ),
@@ -80,7 +132,7 @@ class _UsersPageState extends State<UsersPage> {
         Expanded(
           child: _statCard(
             "Suspended",
-            "28",
+            loaded.suspendedUsersCount.toString(),
             Icons.block_outlined,
             Colors.red,
           ),
@@ -184,6 +236,9 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   Widget _buildUsersTable() {
+
+    UsersLoaded usersLoaded = context.read<UsersCubit>().state as UsersLoaded;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -197,10 +252,8 @@ class _UsersPageState extends State<UsersPage> {
 
           const Divider(height: 30),
 
-          ...List.generate(
-            10,
-                (index) => _userRow(index),
-          ),
+          ...usersLoaded.users.map(
+                (user) => UserRow(user: user)),
         ],
       ),
     );
@@ -213,7 +266,7 @@ class _UsersPageState extends State<UsersPage> {
         Expanded(
           flex: 2,
           child: CustomText(
-            "User ID",
+            "User ID(username)",
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -221,7 +274,7 @@ class _UsersPageState extends State<UsersPage> {
         Expanded(
           flex: 3,
           child: CustomText(
-            "Name",
+            "Last Name",
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -229,7 +282,7 @@ class _UsersPageState extends State<UsersPage> {
         Expanded(
           flex: 4,
           child: CustomText(
-            "Email",
+            "First Name(s)",
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -237,7 +290,7 @@ class _UsersPageState extends State<UsersPage> {
         Expanded(
           flex: 3,
           child: CustomText(
-            "Phone",
+            "Email",
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -269,105 +322,6 @@ class _UsersPageState extends State<UsersPage> {
     );
   }
 
-  Widget _userRow(int index) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: Row(
-        children: [
-
-          Expanded(
-            flex: 2,
-            child: CustomText(
-              "USR-${1000 + index}",
-            ),
-          ),
-
-          const Expanded(
-            flex: 3,
-            child: CustomText(
-              "Quin Sefalloyd",
-            ),
-          ),
-
-          const Expanded(
-            flex: 4,
-            child: CustomText(
-              "quin@email.com",
-            ),
-          ),
-
-          const Expanded(
-            flex: 3,
-            child: CustomText(
-              "+233 24 000 0000",
-            ),
-          ),
-
-          Expanded(
-            flex: 2,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: const Center(
-                child: CustomText(
-                  "Student",
-                  textColor: Colors.green,
-                ),
-              ),
-            ),
-          ),
-
-          Expanded(
-            flex: 2,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: const Center(
-                child: CustomText(
-                  "Active",
-                  textColor: Colors.blue,
-                ),
-              ),
-            ),
-          ),
-
-          Expanded(
-            flex: 2,
-            child: Row(
-              children: [
-
-                IconButton(
-                  onPressed: ()  => context.read<NavigationCubit>().push(StudentUserProfilePage()),
-                  icon: const Icon(
-                    Icons.visibility_outlined,
-                  ),
-                ),
-
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.more_vert,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _statCard(
       String title,
@@ -412,6 +366,132 @@ class _UsersPageState extends State<UsersPage> {
                 textColor: Colors.grey,
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+class UserRow extends StatelessWidget {
+
+  final User user;
+
+  const UserRow({super.key, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        children: [
+
+          //the user's username
+          Expanded(
+            flex: 2,
+            child: CustomText(
+              user.username,
+            ),
+          ),
+
+
+          //last name
+          Expanded(
+            flex: 3,
+            child: CustomText(
+              user.lastName,
+            ),
+          ),
+
+          //first names
+          Expanded(
+            flex: 3,
+            child: CustomText(
+              user.firstName,
+            ),
+          ),
+
+
+          //the user's email.
+          Expanded(
+            flex: 4,
+            child: CustomText(
+              user.email,
+            ),
+          ),
+
+
+          //the user's role.
+          Expanded(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Center(
+                child: CustomText(
+                  user.role,
+                  textColor: Colors.green,
+                ),
+              ),
+            ),
+          ),
+
+          //the user's status.
+          //this indicates whether is active or not.
+          Expanded(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: const Center(
+                child: CustomText(
+                  "Active",
+                  textColor: Colors.blue,
+                ),
+              ),
+            ),
+          ),
+
+          Expanded(
+            flex: 2,
+            child: Row(
+              children: [
+
+                IconButton(
+                  onPressed: () {
+                    if(user.role.toLowerCase() == 'student'){
+                      context.read<NavigationCubit>().push(StudentUserProfilePage());
+                    }else{
+                      context.read<NavigationCubit>().push(AdminUserProfilePage());
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.visibility_outlined,
+                  ),
+                ),
+
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.more_vert,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

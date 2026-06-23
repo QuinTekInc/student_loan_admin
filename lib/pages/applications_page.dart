@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
+import 'package:loan_admin/bloc/applications_bloc.dart';
 import 'package:loan_admin/bloc/navigation_bloc.dart';
+import 'package:loan_admin/components/placeholders.dart';
 import 'package:loan_admin/components/text.dart';
 import 'package:loan_admin/models/models.dart';
 import 'package:loan_admin/pages/application_management/loan_review.page.dart';
@@ -15,11 +17,23 @@ class LoanApplicationPage extends StatefulWidget {
 }
 
 class _LoanApplicationPageState extends State<LoanApplicationPage> {
+
+  final searchController = TextEditingController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    context.read<LoanApplicationsCubit>().fetchLoanApplications();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
@@ -36,7 +50,39 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
             fontSize: 15,
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 24,),
+
+
+          Expanded(
+            child: BlocBuilder<LoanApplicationsCubit, LoanApplicationsState>(
+              builder: (_, state){
+
+                if(state is LoanApplicationsLoading) return LoadingPlaceholder();
+
+                if(state is LoanApplicationsError){
+                  return MessagePlaceholder.error(
+                    message: state.message,
+                    onButtonPressed: () => context.read<LoanApplicationsCubit>().fetchLoanApplications(),
+                  );
+                }
+
+                return _buildContent();
+              }
+            ),
+          )
+
+          ,
+        ],
+      ),
+    );
+  }
+
+  SingleChildScrollView _buildContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
 
           _buildStatistics(),
 
@@ -53,40 +99,57 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
   }
 
   Widget _buildStatistics() {
+
+    LoanApplicationsLoaded appsLoaded = context.read<LoanApplicationsCubit>().state as LoanApplicationsLoaded;
+
     return Row(
+      spacing: 16,
       children: [
         Expanded(
           child: _buildStatCard(
             "Pending Review",
-            "42",
+            appsLoaded.pendingApplicationCount.toString(),
             Icons.pending_actions_outlined,
             Colors.orange,
           ),
         ),
-        const SizedBox(width: 18),
+
+
+        Expanded(
+          child: _buildStatCard(
+            "Under Review",
+            appsLoaded.reviewApplicationCount.toString(),
+            Icons.pending_actions_outlined,
+            Colors.deepPurple,
+          ),
+        ),
+
+
         Expanded(
           child: _buildStatCard(
             "Approved",
-            "128",
+            appsLoaded.approvedApplicationCount.toString(),
             Icons.check_circle_outline,
             Colors.green,
           ),
         ),
-        const SizedBox(width: 18),
+
+
         Expanded(
           child: _buildStatCard(
             "Rejected",
-            "19",
+            appsLoaded.rejectedApplicationCount.toString(),
             Icons.cancel_outlined,
             Colors.red,
           ),
         ),
-        const SizedBox(width: 18),
+
+
         Expanded(
           child: _buildStatCard(
-            "Disbursed",
-            "97",
-            Icons.payments_outlined,
+            "Unknown",
+            appsLoaded.unknownApplicationCount.toString(),
+            Icons.warning_outlined,
             Colors.blue,
           ),
         ),
@@ -162,6 +225,7 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
         children: [
           Expanded(
             child: TextField(
+              controller: searchController,
               decoration: InputDecoration(
                 hintText: "Search applications...",
                 prefixIcon: const Icon(Icons.search),
@@ -280,39 +344,60 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
           const Divider(height: 30),
 
           ...List.generate(
-            8,
-            (index) => _applicationRow(),
+            (context.read<LoanApplicationsCubit>().state as LoanApplicationsLoaded).applications.length,
+            (index) => LoanApplicationCell(
+              loanApplication: (context.read<LoanApplicationsCubit>().state as LoanApplicationsLoaded).applications[index],
+            ),
           )
         ],
       ),
     );
   }
 
-  Widget _applicationRow() {
+}
+
+
+
+class LoanApplicationCell extends StatelessWidget {
+
+  final LoanApplication loanApplication;
+
+  const LoanApplicationCell({super.key, required this.loanApplication});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         children: [
-          const Expanded(
+
+          Expanded(
             flex: 2,
-            child: CustomText("APP-2026-001"),
+            child: CustomText(
+              loanApplication.applicationId,
+              maxLines: 1,
+              softwrap: true,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
 
-          const Expanded(
+          //todo: to be changed to the student name object
+          Expanded(
             flex: 3,
-            child: CustomText("Quin Sefalloyd"),
+            child: CustomText(loanApplication.studentName),
           ),
 
-          const Expanded(
+          Expanded(
             flex: 3,
             child: CustomText(
               "University of Energy and Natural Resources",
             ),
           ),
 
-          const Expanded(
+
+          Expanded(
             flex: 2,
-            child: CustomText("GHS 18,000"),
+            child: CustomText(loanApplication.amountRequested.toStringAsFixed(2)),
           ),
 
           Expanded(
@@ -327,7 +412,7 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
                 borderRadius: BorderRadius.circular(30),
               ),
               child: CustomText(
-                "Pending",
+                loanApplication.status,
                 textAlignment: TextAlign.center,
                 textColor: Colors.orange.shade800,
                 fontWeight: FontWeight.w600,
@@ -342,14 +427,10 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
 
                 IconButton(
                   icon: const Icon(Icons.visibility_outlined),
-                  onPressed: () => context.read<NavigationCubit>().push(LoanApplicationReview(
-                    application: LoanApplication(
-                      applicationId: '121434-12232345',
-                      studentId: '121434-12232345',
-                      status: 'pending',
-                      amountRequested: 1500,
-                      loanReason: 'To Pay off hostel Bills',
-                      createdAt: DateTime.now()),
+                  onPressed: () => context.read<NavigationCubit>().push(
+                    BlocProvider(
+                      create: (_) => ReviewCubit(loanApplication) ,
+                      child: LoanApplicationReview(),
                     )
                   ),
                 ),

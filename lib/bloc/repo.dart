@@ -30,8 +30,72 @@ class Repository{
   }
 
 
-  static Future<List<Map<String, dynamic>>> getApplications() async {
+  static Future<List<LoanApplication>> fetchApplications() async {
+    
+    final response = await ServerConnector.getRequest('applications/');
+    
+    if(response.statusCode != 200){
+      throw Exception("An Exception occurred: ${response.statusCode}");
+    }
+    
+    List<dynamic> responseBody = List<dynamic>.from(jsonDecode(response.body));
 
-    return <Map<String, dynamic>>[];
+    return responseBody.map((jsonMap) => LoanApplication.fromJson(jsonMap)).toList();
+  }
+
+
+  static Future<Map<String, dynamic>> getApplicationReview(String applicationId) async {
+
+    final response = await ServerConnector.getRequest('applications/$applicationId/review/details/');
+
+    if(response.statusCode != 200) throw Exception("An Error occurred: ${response.statusCode}");
+
+    Map<String, dynamic> responseMap = Map<String, dynamic>.from(jsonDecode(
+      response.body));
+
+    return responseMap;
+
+  }
+
+
+  static Future<void> approveLoanApplication({
+    required String applicationId,
+    required double approvedAmount,
+    required int duration,
+  }) async {
+    final request = await ServerConnector.postRequest(
+      'applications/$applicationId/approve/',
+      body: jsonEncode({
+        'approved_amount': approvedAmount,
+        'duration': duration,
+      })
+    );
+
+    if(request.statusCode != 200){
+      throw Exception('An Exception occurred: ${request.statusCode}');
+    }
+  }
+
+  static Future<List<Loan>> fetchLoans() async {
+
+    final response = await ServerConnector.getRequest('loans/');
+
+    if(response.statusCode != 200) throw Exception("An exception occurred: ${response.statusCode}");
+
+    List<dynamic> responseBody = List<dynamic>.from(jsonDecode(response.body));
+
+    return responseBody.map((jsonMap) => Loan.fromJson(jsonMap)).toList();
+  }
+
+  static Future<List<User>> fetchUsers() async {
+
+    final response = await ServerConnector.getRequest('get-users/');
+
+    if(response.statusCode != 200) throw Exception("An error occurred: ${response.statusCode}");
+
+    final List<Map<String, dynamic>> responseBody = List<Map<String, dynamic>>.from(
+        jsonDecode(response.body));
+
+    return responseBody.map((jsonMap) => User.fromJson(jsonMap)).toList();
   }
 }

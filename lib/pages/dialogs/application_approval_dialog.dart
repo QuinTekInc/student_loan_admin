@@ -197,21 +197,34 @@ class _LoanApprovalDialogState extends State<LoanApprovalDialog> {
               children: [
 
                 OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Cancel"),
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    shape: StadiumBorder(
+                      side: BorderSide(color: Colors.red.shade600, width: 1.5)
+                    )
+                  ),
+                  child: CustomText(
+                    'Cancel',
+                    textColor: Colors.red.shade600,
+                    fontSize: 14,
+                  ),
                 ),
 
                 const SizedBox(width: 12),
 
                 ElevatedButton.icon(
-                  onPressed: () {
-                    // Approve loan here
-                  },
-                  icon: const Icon(Icons.check),
-                  label: const Text(
-                    "Approve Loan",
+                  onPressed: handleApproveLoan,
+                  icon: const Icon(Icons.check, color: Colors.white,),
+                  label: CustomText(
+                    'Approve Loan',
+                    textColor: Colors.white,
+                    fontSize: 14,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade600,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)
+                    )
                   ),
                 ),
               ],
@@ -241,5 +254,11 @@ class _LoanApprovalDialogState extends State<LoanApprovalDialog> {
         ),
       ),
     );
+  }
+
+
+
+  void handleApproveLoan() async {
+
   }
 }
