@@ -1,6 +1,4 @@
-
-
-class User{
+class User {
   String firstName;
   String lastName;
   String username;
@@ -14,55 +12,77 @@ class User{
     required this.username,
     required this.email,
     required this.role,
-    required this.status
+    required this.status,
   });
 
-  factory User.fromJson(Map<String, dynamic> jsonMap){
-
+  factory User.fromJson(Map<String, dynamic> jsonMap) {
     return User(
       firstName: jsonMap['first_name'],
       lastName: jsonMap['last_name'],
       username: jsonMap['username'],
       email: jsonMap['email'],
       role: jsonMap['role'], //todo: add the role field to the backend.
-      status: jsonMap['status']
+      status: jsonMap['status'],
     );
   }
 }
 
+class AppNotification {
+  final String id;
+  final String notificationType;
+  final String title;
+  final String message;
+  bool isRead;
+  final DateTime createdAt;
 
+  AppNotification({
+    required this.id,
+    required this.notificationType,
+    required this.title,
+    required this.message,
+    required this.isRead,
+    required this.createdAt,
+  });
 
-class DashboardModel{
+  factory AppNotification.fromJson(Map<String, dynamic> jsonMap) {
+    return AppNotification(
+      id: jsonMap['id'],
+      notificationType: jsonMap['notification_type'],
+      title: jsonMap['title'],
+      message: jsonMap['message'],
+      isRead: jsonMap['is_read'],
+      createdAt: DateTime.parse(jsonMap['created_at']),
+    );
+  }
+}
 
+class DashboardModel {
   final Map<String, dynamic> dashboardStats;
-  final List<LoanApplication> recentApplications; //the first current applications
+  final List<LoanApplication>
+  recentApplications; //the first current applications
 
   DashboardModel({
     required this.dashboardStats,
-    required this.recentApplications
+    required this.recentApplications,
   });
 
+  factory DashboardModel.fromJson(Map<String, dynamic> jsonMap) {
+    List<LoanApplication> applications = [];
 
-  factory DashboardModel.fromJson(Map<String, dynamic> jsonMap){
-    
-    List<LoanApplication> applications =  [];
-
-    if(jsonMap.containsKey('recent_applications')){
-      applications = List<dynamic>.from(jsonMap['recent_applications']!).map(
-              (applicationMap) => LoanApplication.fromJson(applicationMap)).toList();
+    if (jsonMap.containsKey('recent_applications')) {
+      applications = List<dynamic>.from(jsonMap['recent_applications']!)
+          .map((applicationMap) => LoanApplication.fromJson(applicationMap))
+          .toList();
     }
 
     return DashboardModel(
-      dashboardStats: Map<String,dynamic>.from(jsonMap['dashboard_stats']),
-      recentApplications: applications
+      dashboardStats: Map<String, dynamic>.from(jsonMap['dashboard_stats']),
+      recentApplications: applications,
     );
   }
 }
 
-
-
-class LoanApplication{
-
+class LoanApplication {
   final String applicationId;
   final String studentId;
   final String studentName;
@@ -80,11 +100,10 @@ class LoanApplication{
     required this.amountRequested,
     required this.status,
     required this.createdAt,
-    this.updatedAt
+    this.updatedAt,
   });
 
-
-  factory LoanApplication.fromJson(Map<String, dynamic> jsonMap){
+  factory LoanApplication.fromJson(Map<String, dynamic> jsonMap) {
     return LoanApplication(
       applicationId: jsonMap['id'],
       studentId: jsonMap['student_id'],
@@ -93,26 +112,24 @@ class LoanApplication{
       amountRequested: (jsonMap['amount_requested'] as num).toDouble(),
       status: jsonMap['status'],
       createdAt: DateTime.parse(jsonMap['created_at']),
-      updatedAt: jsonMap['updated_at'] == null ? null : DateTime.parse(jsonMap['updated_at'])
+      updatedAt: jsonMap['updated_at'] == null
+          ? null
+          : DateTime.parse(jsonMap['updated_at']),
     );
   }
 }
 
-
-String prettyFormat(String s){
-
+String prettyFormat(String s) {
   String formatted = '';
 
-  if(s.contains('_')){
+  if (s.contains('_')) {
     formatted = formatted.replaceAll("_", " ");
   }
 
   return formatted.toUpperCase();
 }
 
-
-enum ApplicationStatus{
-
+enum ApplicationStatus {
   UNKNOWN("unknown"),
   SUBMITTED("submitted"),
   UNDER_REVIEW("under_review"),
@@ -124,24 +141,24 @@ enum ApplicationStatus{
 
   const ApplicationStatus(this.statusString);
 
-  static ApplicationStatus fromStatusString(String statusString){
-
-    for(var status in ApplicationStatus.values){
-      if(status.statusString == statusString) return status;
+  static ApplicationStatus fromStatusString(String statusString) {
+    for (var status in ApplicationStatus.values) {
+      if (status.statusString == statusString) return status;
     }
 
     return UNKNOWN;
   }
 }
 
-
-class Loan{
+class Loan {
   String loanId;
   String studentId;
+  String studentName;
   String applicationId;
   double approvedAmount;
   double interestRate;
   double totalAmount;
+  int duration;
   String status;
   DateTime? nextPayment;
   DateTime createdAt;
@@ -150,10 +167,12 @@ class Loan{
   Loan({
     required this.loanId,
     required this.studentId,
+    required this.studentName,
     required this.applicationId,
     required this.approvedAmount,
     required this.interestRate,
     required this.totalAmount,
+    required this.duration,
     required this.status,
     this.nextPayment,
     required this.createdAt,
@@ -161,26 +180,26 @@ class Loan{
   });
 
   factory Loan.fromJson(Map<String, dynamic> jsonMap) {
-
     return Loan(
       loanId: jsonMap['id'],
       studentId: jsonMap['student_id'],
+      studentName: jsonMap['student_name'],
       applicationId: jsonMap['application_id'],
       approvedAmount: (jsonMap['approved_amount'] as num).toDouble(),
       interestRate: (jsonMap['interest_rate'] as num).toDouble(),
       totalAmount: (jsonMap['total_amount'] as num).toDouble(),
+      duration: (jsonMap['duration'] as num).toInt(),
       status: jsonMap['status'],
       nextPayment: null,
       createdAt: DateTime.parse(jsonMap['created_at']),
-      updatedAt: jsonMap['updated_at'] != null ? DateTime.parse('updated_at') : null
+      updatedAt: jsonMap['updated_at'] != null
+          ? DateTime.parse('updated_at')
+          : null,
     );
   }
 }
 
-
-
-class LoanPayment{
-
+class LoanPayment {
   String paymentId;
   String loanId;
   String studentId;
@@ -198,13 +217,11 @@ class LoanPayment{
     required this.amount,
     required this.status,
     required this.createdAt,
-    required this.updatedAt
+    required this.updatedAt,
   });
-
 }
 
-enum PaymentMethod{
-
+enum PaymentMethod {
   UNKNOWN("unknown"),
   CASH("cash"),
   MOBILE_MONEY("mobile_money");
@@ -213,18 +230,16 @@ enum PaymentMethod{
 
   const PaymentMethod(this.methodString);
 
-  static PaymentMethod fromMethodString(String methodString){
-
-    for(var method in PaymentMethod.values){
-      if(method.methodString == methodString) return method;
+  static PaymentMethod fromMethodString(String methodString) {
+    for (var method in PaymentMethod.values) {
+      if (method.methodString == methodString) return method;
     }
 
     return UNKNOWN;
   }
 }
 
-enum PaymentStatus{
-
+enum PaymentStatus {
   UNKNOWN("completed"),
   CONFIRMED("confirmed"),
   COMPLETED("completed");
@@ -233,22 +248,16 @@ enum PaymentStatus{
 
   const PaymentStatus(this.statusString);
 
-  static PaymentStatus fromStatusString(String statusString){
-
-    for(var status in PaymentStatus.values){
-      if(status.statusString == statusString) return status;
+  static PaymentStatus fromStatusString(String statusString) {
+    for (var status in PaymentStatus.values) {
+      if (status.statusString == statusString) return status;
     }
 
     return UNKNOWN;
   }
 }
 
-
-
-
-
-class LoanApplicationInfo{
-
+class LoanApplicationInfo {
   //personal information
   final String firstNames;
   final String surname;
@@ -270,7 +279,6 @@ class LoanApplicationInfo{
   final String department;
   final String level;
 
-
   LoanApplicationInfo({
     required this.firstNames,
     required this.surname,
@@ -291,11 +299,9 @@ class LoanApplicationInfo{
     required this.department,
   });
 
-
   String get fullName => '$surname $firstNames';
 
-  factory LoanApplicationInfo.fromJson(Map<String, dynamic> jsonMap){
-
+  factory LoanApplicationInfo.fromJson(Map<String, dynamic> jsonMap) {
     return LoanApplicationInfo(
       firstNames: jsonMap['first_names'],
       surname: jsonMap['surname'],
@@ -318,10 +324,7 @@ class LoanApplicationInfo{
   }
 }
 
-
-
-class ApplicationReview{
-
+class ApplicationReview {
   final String reviewId;
   final String status;
   final String reviewedBy;
@@ -337,12 +340,10 @@ class ApplicationReview{
     required this.comments,
     required this.approvedAmount,
     required this.rejectionReason,
-    required this.reviewedAt
+    required this.reviewedAt,
   });
 
-
-
-  factory ApplicationReview.fromJson(Map<String, dynamic> jsonMap){
+  factory ApplicationReview.fromJson(Map<String, dynamic> jsonMap) {
     return ApplicationReview(
       reviewId: jsonMap['id'],
       status: jsonMap['status'],
@@ -350,13 +351,12 @@ class ApplicationReview{
       comments: jsonMap['comments'],
       approvedAmount: (jsonMap['approved_amount'] ?? 0 as num).toDouble(),
       rejectionReason: jsonMap['rejection_reason'],
-      reviewedAt: DateTime.parse(jsonMap['reviewed_at'])
+      reviewedAt: DateTime.parse(jsonMap['reviewed_at']),
     );
   }
 }
 
-
-class ApplicationDocument{
+class ApplicationDocument {
   final String id;
   final String applicationId;
   final String studentId;
@@ -367,7 +367,6 @@ class ApplicationDocument{
   final DateTime createdAt;
   final DateTime? updatedAt;
 
-
   ApplicationDocument({
     required this.id,
     required this.applicationId,
@@ -377,14 +376,14 @@ class ApplicationDocument{
     required this.status,
     required this.fraudAnalysis,
     required this.createdAt,
-    required this.updatedAt
+    required this.updatedAt,
   });
 
-
-  factory ApplicationDocument.fromJson(Map<String, dynamic> jsonMap){
-
-    DocumentFraudDetectionAnalysis analysis = DocumentFraudDetectionAnalysis
-        .fromJson(Map<String, dynamic>.from(jsonMap['fraud_detection_analysis']));
+  factory ApplicationDocument.fromJson(Map<String, dynamic> jsonMap) {
+    DocumentFraudDetectionAnalysis analysis =
+        DocumentFraudDetectionAnalysis.fromJson(
+          Map<String, dynamic>.from(jsonMap['fraud_detection_analysis']),
+        );
 
     return ApplicationDocument(
       id: jsonMap['id'],
@@ -395,13 +394,14 @@ class ApplicationDocument{
       status: jsonMap['status'],
       fraudAnalysis: analysis,
       createdAt: DateTime.parse(jsonMap['created_at']),
-      updatedAt: jsonMap['updated_at'] == null ? null : DateTime.parse(jsonMap['updated_at'])
+      updatedAt: jsonMap['updated_at'] == null
+          ? null
+          : DateTime.parse(jsonMap['updated_at']),
     );
   }
 }
 
-class DocumentFraudDetectionAnalysis{
-
+class DocumentFraudDetectionAnalysis {
   final String verificationStatus;
   final double ocrConfidence;
   final String riskLevel;
@@ -415,12 +415,15 @@ class DocumentFraudDetectionAnalysis{
     required this.riskLevel,
     required this.riskScore,
     required this.indicators,
-    required this.requiresManualReview
+    required this.requiresManualReview,
   });
 
-  factory DocumentFraudDetectionAnalysis.fromJson(Map<String, dynamic> jsonMap){
-
-    Map<String, dynamic> fdMap = Map<String, dynamic>.from(jsonMap['fraud_detection']);
+  factory DocumentFraudDetectionAnalysis.fromJson(
+    Map<String, dynamic> jsonMap,
+  ) {
+    Map<String, dynamic> fdMap = Map<String, dynamic>.from(
+      jsonMap['fraud_detection'],
+    );
 
     String riskLevel = fdMap['risk_level'];
     double riskScore = (fdMap['risk_score'] as num).toDouble();
@@ -435,9 +438,7 @@ class DocumentFraudDetectionAnalysis{
       riskLevel: riskLevel,
       riskScore: riskScore,
       indicators: indicators,
-      requiresManualReview: isManual
+      requiresManualReview: isManual,
     );
   }
-
 }
-

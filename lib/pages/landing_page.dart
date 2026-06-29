@@ -5,6 +5,7 @@ import 'package:loan_admin/components/button.dart';
 import 'package:loan_admin/components/text.dart';
 import 'package:loan_admin/pages/applications_page.dart';
 import 'package:loan_admin/pages/loans_page.dart';
+import 'package:loan_admin/pages/notifications_page.dart';
 import 'package:loan_admin/pages/settings_page.dart';
 import 'package:loan_admin/pages/users_page.dart';
 import '../bloc/navigation_bloc.dart';
@@ -45,6 +46,12 @@ class _LandingPageState extends State<LandingPage> {
 
 
     DashboardMenuItem(
+      title: 'Notifications', 
+      icon: Icons.notifications
+    ),
+
+
+    DashboardMenuItem(
       title: 'Settings',
       icon: Icons.settings
     )
@@ -64,6 +71,7 @@ class _LandingPageState extends State<LandingPage> {
       LoansPage(),
       LoanApplicationPage(),
       UsersPage(),
+      NotificationsPage(),
       SettingsPage(),
     ];
 

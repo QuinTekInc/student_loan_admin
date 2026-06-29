@@ -1,8 +1,12 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/bloc/applications_bloc.dart';
+import 'package:loan_admin/components/placeholders.dart';
 import 'package:loan_admin/components/text.dart';
 
 class LoanApprovalDialog extends StatefulWidget {
+
   const LoanApprovalDialog({
     super.key,
   });
@@ -39,6 +43,9 @@ class _LoanApprovalDialogState extends State<LoanApprovalDialog> {
   @override
   void initState() {
     super.initState();
+
+    amountController.text = context.read<ReviewCubit>()
+        .loanApplication.amountRequested.toString();
 
     amountController.addListener(calculateLoan);
     interestController.addListener(calculateLoan);
@@ -167,28 +174,6 @@ class _LoanApprovalDialogState extends State<LoanApprovalDialog> {
               ),
             ),
 
-            const SizedBox(height: 20),
-
-            const CustomText(
-              "Approval Notes",
-              fontWeight: FontWeight.w600,
-            ),
-
-            const SizedBox(height: 8),
-
-            TextField(
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText:
-                "Optional notes regarding this approval...",
-                filled: true,
-                fillColor: const Color(0xffF8FAFC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
 
             const SizedBox(height: 24),
 
@@ -259,6 +244,81 @@ class _LoanApprovalDialogState extends State<LoanApprovalDialog> {
 
 
   void handleApproveLoan() async {
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => LoadingPlaceholder()
+    );
+
+    try{
+      await context.read<ReviewCubit>().acceptApplication(
+        amount: double.parse(amountController.text),
+        percentage: double.parse(interestController.text),
+        duration: int.parse(durationController.text)
+      );
+
+      Navigator.pop(context);//close the loading dialog
+
+
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: CustomText(
+            'Loan Approval Success',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+          icon: Icon(
+            Icons.check_circle,
+            color: Colors.green.shade700, size: 60,
+          ),
+          content: CustomText(
+            'You have successfully approved loan,'
+            '${context.read<ReviewCubit>().loanApplication.applicationId}'
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), //close the success dialog
+              child: CustomText(
+                "Okay",
+                textColor: Colors.green.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            )
+          ],
+        )
+      );
+
+      Navigator.pop(context);//close the acceptance dialog
+
+    }catch(ex){
+
+      Navigator.pop(context); //close the loading dialog
+
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: CustomText('Error', fontSize: 16, fontWeight: FontWeight.w600,),
+          icon: Icon(Icons.error, color: Colors.red.shade700, size: 60,),
+          content: CustomText(
+            'There was an error in approving his loan: \n ${ex.toString()}'
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: CustomText(
+                "Close",
+                textColor: Colors.red.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            )
+          ],
+        )
+      );
+    }
 
   }
 }

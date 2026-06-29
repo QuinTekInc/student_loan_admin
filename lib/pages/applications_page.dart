@@ -438,12 +438,330 @@ class LoanApplicationCell extends StatelessWidget {
 
                 IconButton(
                   icon: const Icon(Icons.more_vert),
-                  onPressed: () {},
+                  onPressed: () => showModalBottomSheet(
+                    context: context,
+                    builder: (_) => _LoanApplicationSheet(
+                      applicationId: loanApplication.applicationId,
+                      studentName: loanApplication.studentName,
+                      status: loanApplication.status
+                    )
+                  ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+
+
+
+class _LoanApplicationSheet extends StatelessWidget {
+  const _LoanApplicationSheet({
+    required this.applicationId,
+    required this.studentName,
+    required this.status,
+  });
+
+  final String applicationId;
+  final String studentName;
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 540,
+
+      decoration: const BoxDecoration(
+        color: Colors.white,
+
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(32),
+        ),
+      ),
+
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+
+        child: Column(
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
+
+          children: [
+
+            Center(
+              child: Container(
+                width: 80,
+                height: 6,
+
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+
+                  borderRadius:
+                  BorderRadius.circular(50),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            Row(
+              children: [
+
+                Container(
+                  height: 60,
+                  width: 60,
+
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    shape: BoxShape.circle,
+                  ),
+
+                  child: Icon(
+                    Icons.description,
+                    color:
+                    Colors.green.shade700,
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
+                    children: [
+
+                      HeaderText(
+                        "Loan Application",
+                      ),
+
+                      const SizedBox(
+                        height: 4,
+                      ),
+
+                      CustomText(
+                        applicationId,
+                        textColor:
+                        Colors.grey,
+                      ),
+
+                      const SizedBox(
+                        height: 4,
+                      ),
+
+                      CustomText(
+                        studentName,
+                      ),
+                    ],
+                  ),
+                ),
+
+                Container(
+                  padding:
+                  const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+
+                  decoration: BoxDecoration(
+                    color:
+                    Colors.orange.shade50,
+
+                    borderRadius:
+                    BorderRadius.circular(
+                      50,
+                    ),
+                  ),
+
+                  child: CustomText(
+                    status,
+                    textColor:
+                    Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 28),
+
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 3,
+
+                crossAxisSpacing: 16,
+
+                mainAxisSpacing: 16,
+
+                childAspectRatio: 2.5,
+
+                children: [
+
+                  _action(
+                    context,
+                    icon: Icons.visibility,
+                    title:
+                    "View Application",
+                    onTap: () {},
+                  ),
+
+                  _action(
+                    context,
+                    icon:
+                    Icons.fact_check,
+                    title:
+                    "Review",
+                    onTap: () {},
+                  ),
+
+                  _action(
+                    context,
+                    icon:
+                    Icons.check_circle,
+                    title:
+                    "Approve",
+                    color:
+                    Colors.green,
+                    onTap: () {},
+                  ),
+
+                  _action(
+                    context,
+                    icon:
+                    Icons.cancel,
+                    title:
+                    "Reject",
+                    color:
+                    Colors.red,
+                    onTap: () {},
+                  ),
+
+                  _action(
+                    context,
+                    icon:
+                    Icons.folder,
+                    title:
+                    "Documents",
+                    onTap: () {},
+                  ),
+
+                  _action(
+                    context,
+                    icon:
+                    Icons.psychology,
+                    title:
+                    "AI Scan",
+                    onTap: () {},
+                  ),
+
+                  _action(
+                    context,
+                    icon:
+                    Icons.person,
+                    title:
+                    "Student",
+                    onTap: () {},
+                  ),
+
+                  _action(
+                    context,
+                    icon:
+                    Icons.notifications,
+                    title:
+                    "Notify",
+                    onTap: () {},
+                  ),
+
+                  _action(
+                    context,
+                    icon:
+                    Icons.delete,
+                    title:
+                    "Delete",
+                    color:
+                    Colors.red,
+                    onTap: () {},
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _action(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required VoidCallback onTap,
+        Color color = Colors.green,
+      }) {
+    return InkWell(
+      borderRadius:
+      BorderRadius.circular(18),
+
+      onTap: () {
+        Navigator.pop(context);
+
+        onTap();
+      },
+
+      child: Container(
+        padding:
+        const EdgeInsets.all(18),
+
+        decoration: BoxDecoration(
+          color: color.withOpacity(.08),
+
+          borderRadius:
+          BorderRadius.circular(
+            18,
+          ),
+        ),
+
+        child: Row(
+          children: [
+
+            Container(
+              height: 42,
+              width: 42,
+
+              decoration: BoxDecoration(
+                color:
+                color.withOpacity(
+                  .15,
+                ),
+
+                shape:
+                BoxShape.circle,
+              ),
+
+              child: Icon(
+                icon,
+                color: color,
+              ),
+            ),
+
+            const SizedBox(
+              width: 14,
+            ),
+
+            Expanded(
+              child: CustomText(
+                title,
+                fontWeight:
+                FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

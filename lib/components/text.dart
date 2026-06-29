@@ -190,17 +190,17 @@ class _CustomPasswordFieldState extends State<CustomPasswordField> {
         controller: widget.controller,
         obscureText: obscureText,
         onChanged: widget.onChanged,
+        cursorColor: Colors.green.shade400,
         decoration: InputDecoration(
           labelText: widget.hintText ?? "Password",
+          floatingLabelStyle: TextStyle(
+            color: Colors.green.shade400
+          ),
           filled: true,
           fillColor: const Color(0xffF1F5F9),
           prefixIcon: Icon(CupertinoIcons.lock),
           suffixIcon: IconButton(
-            icon: Icon(
-              obscureText
-                  ? Icons.visibility_off
-                  : Icons.visibility,
-            ),
+            icon: Icon( obscureText ? Icons.visibility_off : Icons.visibility,),
             onPressed: () {
               setState(() => obscureText = !obscureText);
             },
@@ -209,6 +209,8 @@ class _CustomPasswordFieldState extends State<CustomPasswordField> {
             borderRadius: BorderRadius.circular(14),
             borderSide: BorderSide.none,
           ),
+
+          enabled: true,
         ),
       ),
     );

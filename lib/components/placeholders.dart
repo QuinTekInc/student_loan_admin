@@ -61,7 +61,7 @@ class MessagePlaceholder extends StatelessWidget {
       child: Column( 
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         spacing: 12,
         children: [
 

@@ -1,12 +1,11 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loan_admin/bloc/applications_bloc.dart';
-import 'package:loan_admin/bloc/navigation_bloc.dart';
-import 'package:loan_admin/router/app_router.dart';
+import 'package:loan_admin/bloc/loans_bloc.dart';
 
 import '../../bloc/auth_bloc.dart';
+import '../../bloc/notification_bloc.dart';
 import '../../bloc/users_bloc.dart';
 import '../../components/text.dart';
 import '../landing_page.dart';
@@ -25,7 +24,6 @@ class _LoginPageState extends State<LoginPage> {
   final passwordController = TextEditingController();
 
   double get maxWidth {
-
     final width = MediaQuery.of(context).size.width;
 
     if (width < 600) return width * 0.92; // mobile
@@ -33,29 +31,25 @@ class _LoginPageState extends State<LoginPage> {
     return 500; // desktop
   }
 
-
   //the login button should be disabled by default.
   bool disableButton = true;
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthCubit, AuthState>(
-      listener: (context, state){
-
-        if(state is AuthError){
+      listener: (context, state) {
+        if (state is AuthError) {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
               title: Text("Login Error"),
               content: CustomText(state.message),
-            )
+            ),
           );
           return;
         }
 
-
-        if(state is AuthAuthenticated){
-
+        if (state is AuthAuthenticated) {
           //TODO: put this in the app router
           //navigate to it by calling pushReplacementNamed.
           Navigator.push(
@@ -63,19 +57,19 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(
               builder: (_) => MultiBlocProvider(
                 providers: [
-
                   BlocProvider(
-                    create: (_) => LoanApplicationsCubit(),
+                    create: (_) => NotificationCubit()..listenForNotifications()
                   ),
 
-                  BlocProvider(
-                    create: (_) => UsersCubit()
-                  )
+                  BlocProvider(create: (_) => LoansCubit()),
 
+                  BlocProvider(create: (_) => LoanApplicationsCubit()),
+
+                  BlocProvider(create: (_) => UsersCubit()),
                 ],
-                child: LandingPage()
-              )
-            )
+                child: LandingPage(),
+              ),
+            ),
           );
           return;
         }
@@ -101,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         );
-      }
+      },
     );
   }
 
@@ -112,10 +106,7 @@ class _LoginPageState extends State<LoginPage> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Colors.green.shade700,
-            Colors.green.shade500,
-          ],
+          colors: [Colors.green.shade700, Colors.green.shade500],
         ),
         borderRadius: BorderRadius.circular(24),
       ),
@@ -126,16 +117,13 @@ class _LoginPageState extends State<LoginPage> {
 
           SizedBox(height: 16),
 
-          HeaderText(
-            "Welcome Back",
-            textColor: Colors.white,
-          ),
+          HeaderText("Welcome Back", textColor: Colors.white),
           SizedBox(height: 8),
 
           CustomText(
             "Login to continue to your student loan dashboard.",
             textColor: Colors.white70,
-            height: 1.5
+            height: 1.5,
           ),
         ],
       ),
@@ -154,26 +142,22 @@ class _LoginPageState extends State<LoginPage> {
             color: Color(0x14000000),
             blurRadius: 20,
             offset: Offset(0, 10),
-          )
+          ),
         ],
       ),
       child: Column(
         children: [
-
-          HeaderText(
-            "Login",
-            fontSize: 22
-          ),
+          HeaderText("Login", fontSize: 22),
           const SizedBox(height: 20),
 
           CustomTextField(
             controller: usernameController,
             hintText: 'Username',
             leadingIcon: CupertinoIcons.person,
-            onChanged: (newValue) => validateFields()
+            onChanged: (newValue) => validateFields(),
           ),
 
-          const SizedBox(height: 10,),
+          const SizedBox(height: 10),
 
           CustomPasswordField(
             controller: passwordController,
@@ -187,11 +171,9 @@ class _LoginPageState extends State<LoginPage> {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: ()  => Navigator.push(
+              onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => Placeholder()
-                )
+                MaterialPageRoute(builder: (context) => Placeholder()),
               ),
               child: const Text(
                 "Forgot Password?",
@@ -214,7 +196,10 @@ class _LoginPageState extends State<LoginPage> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: () => context.read<AuthCubit>().login(usernameController.text, passwordController.text),
+                onPressed: () => context.read<AuthCubit>().login(
+                  usernameController.text,
+                  passwordController.text,
+                ),
                 child: CustomText(
                   "Login",
                   textColor: Colors.white,
@@ -223,18 +208,14 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-
         ],
       ),
     );
   }
 
-
-
-  void validateFields(){
+  void validateFields() {
     String username = usernameController.text;
     String password = passwordController.text;
     setState(() => disableButton = username.isEmpty || password.isEmpty);
   }
-
 }

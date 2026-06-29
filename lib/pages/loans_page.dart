@@ -1,36 +1,82 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/bloc/loans_bloc.dart';
 import 'package:loan_admin/bloc/navigation_bloc.dart';
+import 'package:loan_admin/components/placeholders.dart';
 import 'package:loan_admin/components/text.dart';
+import 'package:loan_admin/models/models.dart';
 import 'package:loan_admin/pages/loan_management/details_page.dart';
 import 'package:loan_admin/pages/loan_management/manual_payment_page.dart';
 import 'package:loan_admin/pages/loan_management/payment_history.dart';
 import 'package:loan_admin/pages/loan_management/repayment_schedule.dart';
 
-class LoansPage extends StatelessWidget {
+class LoansPage extends StatefulWidget {
   const LoansPage({super.key});
 
   @override
+  State<LoansPage> createState() => _LoansPageState();
+}
+
+class _LoansPageState extends State<LoansPage> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    context.read<LoansCubit>().fetchLoans();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+    return Padding(
+      padding: const EdgeInsets.all(16),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 20,
         children: [
 
           HeaderText("Loans Management"),
 
-          const SizedBox(height: 24),
 
-          _buildStatistics(),
+          Expanded(
+            child: BlocBuilder<LoansCubit, LoansState>(
+              builder: (context, state){
 
-          const SizedBox(height: 24),
+                if(state is LoansLoading){
+                  return LoadingPlaceholder();
+                }
 
-          _buildFilters(),
 
-          const SizedBox(height: 24),
+                if(state is LoansError) {
+                  return MessagePlaceholder.error(
+                    message: state.message,
+                    onButtonPressed: () => context.read<LoansCubit>().fetchLoans()
+                  );
+                }
 
-          _buildLoansTable(context),
+
+
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 12,
+                  children: [
+                    _buildStatistics(),
+
+                    _buildFilters(),
+
+                    Expanded(
+                      child: _buildLoansTable(context),
+                    ),
+                  ],
+                );
+              }
+            ),
+          )
+
         ],
       ),
     );
@@ -38,6 +84,10 @@ class LoansPage extends StatelessWidget {
 
   // ================= TABLE =================
   Widget _buildLoansTable(BuildContext context) {
+
+    LoansLoaded loaded = context.read<LoansCubit>().state as LoansLoaded;
+
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -51,49 +101,70 @@ class LoansPage extends StatelessWidget {
 
           const Divider(height: 30),
 
-          ...List.generate(
-            10,
-                (index) => _loanRow(context, index),
+          if(loaded.loans.isEmpty) Expanded(
+            child: MessagePlaceholder(
+              icon: CupertinoIcons.cube_box,
+              iconColor: Colors.green.shade400,
+              message: 'All Loans appear here',
+            ),
           ),
+
+          if(loaded.loans.isNotEmpty)Expanded(
+            child: ListView.builder(
+              itemCount: loaded.loans.length,
+              itemBuilder: (context, index){
+                return _loanRow(loaded.loans[index]);
+              },
+            ),
+          )
         ],
       ),
     );
   }
 
-  Widget _loanRow(BuildContext context, int index) {
+  Widget _loanRow(Loan loan) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         children: [
 
-          const Expanded(
+
+          //loan id
+          Expanded(
             flex: 2,
-            child: CustomText("LN-1001"),
+            child: CustomText(loan.loanId),
           ),
 
-          const Expanded(
+
+          //student name
+          Expanded(
             flex: 3,
-            child: CustomText("Quin Sefalloyd"),
+            child: CustomText(loan.studentName),
           ),
 
-          const Expanded(
+
+          //loan amount
+          Expanded(
             flex: 2,
-            child: CustomText("GHS 18,000"),
+            child: CustomText("GHS ${loan.totalAmount}"),
           ),
 
-          const Expanded(
+          //outstanding amount
+          Expanded(
             flex: 2,
-            child: CustomText("GHS 12,500"),
+            child: CustomText("GHS ${loan.interestRate}"),
           ),
 
-          const Expanded(
+          //percentage
+          Expanded(
             flex: 2,
-            child: CustomText("12%"),
+            child: CustomText("${loan.totalAmount}%"),
           ),
 
-          const Expanded(
+          //duration
+          Expanded(
             flex: 2,
-            child: CustomText("24 Months"),
+            child: CustomText("${loan.duration} Months"),
           ),
 
           Expanded(
@@ -150,19 +221,30 @@ class LoansPage extends StatelessWidget {
   }
 
   // ================= ACTION TILE =================
-
-
-  // ================= STATS (UNCHANGED) =================
   Widget _buildStatistics() {
+
+    LoansLoaded loaded = context.read<LoansCubit>().state as LoansLoaded;
+
     return Row(
       children: [
-        Expanded(child: _statCard("Total Loans", "1,248", Icons.account_balance, Colors.blue)),
+
+        Expanded(
+          child: _statCard("Total Loans", loaded.loans.length.toString(), Icons.account_balance, Colors.blue)
+        ),
+
         const SizedBox(width: 16),
-        Expanded(child: _statCard("Active", "918", Icons.check_circle, Colors.green)),
+
+        Expanded(
+          child: _statCard("Active", loaded.activeLoansCount.toString(), Icons.check_circle, Colors.green)
+        ),
         const SizedBox(width: 16),
-        Expanded(child: _statCard("Completed", "287", Icons.task_alt, Colors.orange)),
+        Expanded(
+          child: _statCard("Completed", loaded.completedLoansCount.toString(), Icons.task_alt, Colors.orange)
+        ),
         const SizedBox(width: 16),
-        Expanded(child: _statCard("Defaulted", "43", Icons.warning, Colors.red)),
+        Expanded(
+          child: _statCard("Defaulted", "N/A", Icons.warning, Colors.red)
+        ),
       ],
     );
   }

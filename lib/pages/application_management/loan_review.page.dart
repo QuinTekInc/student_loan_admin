@@ -610,14 +610,20 @@ class _LoanApplicationReviewState extends State<LoanApplicationReview> {
   void handleApproveLoan(){
     showDialog(
       context: context,
-      builder: (_) => LoanApprovalDialog()
+      builder: (_) => BlocProvider.value(
+        value: context.read<ReviewCubit>(),
+        child: LoanApprovalDialog()
+      )
     );
   }
 
   void handleRejectLoan(){
     showDialog(
       context: context,
-      builder: (_) => RejectLoanApplicationDialog(applicationId: context.read<ReviewCubit>().loanApplication.applicationId)
+      builder: (_) => BlocProvider.value(
+        value: context.read<ReviewCubit>(),
+        child: RejectLoanApplicationDialog()
+      )
     );
   }
 }

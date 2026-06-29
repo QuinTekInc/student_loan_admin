@@ -14,6 +14,10 @@ class LoansLoading extends  LoansState{}
 class LoansLoaded extends LoansState{
 
   final List<Loan> loans;
+
+  int get activeLoansCount => loans.where((loan) => loan.status == 'active').length;
+  int get completedLoansCount => loans.where((loan) => loan.status == 'completed').length;
+
   LoansLoaded(this.loans);
 
 }
@@ -40,8 +44,9 @@ class LoansCubit extends Cubit<LoansState>{
       emit(LoansLoaded(loans));
 
     }catch(ex, trace){
+      print(ex.toString());
       debugPrintStack(stackTrace: trace);
-      emit(LoansError('Error'));
+      emit(LoansError(ex.toString()));
     }
   }
 

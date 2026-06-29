@@ -76,6 +76,31 @@ class Repository{
     }
   }
 
+  static Future<void> rejectApplication({
+    required String applicationId,
+    required String rejectionReason,
+    String? adminNotes
+  }) async {
+
+    Map<String, dynamic> body = {'rejection_reason': rejectionReason};
+
+    if(adminNotes != null && adminNotes.isNotEmpty){
+      body['comments'] = adminNotes;
+    }
+
+
+    final response = await ServerConnector.postRequest(
+      "application/$applicationId/reject",
+      body: jsonEncode(body)
+    );
+
+
+    if(response.statusCode != 200){
+      throw Exception("An error occurred while rejecting the application: ${response.statusCode}");
+    }
+
+  }
+
   static Future<List<Loan>> fetchLoans() async {
 
     final response = await ServerConnector.getRequest('loans/');

@@ -11,15 +11,12 @@ class DashboardInitial extends DashboardState{}
 class DashboardLoading extends DashboardState{}
 
 class DashboardLoaded extends DashboardState{
-
   final Map<String, dynamic> dashboardMap;
-
   DashboardLoaded(this.dashboardMap);
 }
 
 class DashboardError extends DashboardState{
   final String message;
-
   DashboardError(this.message);
 }
 
@@ -31,6 +28,7 @@ class DashboardCubit extends Cubit<DashboardState>{
   DashboardCubit(this.webSocketService) : super(DashboardInitial());
 
   void fetchDashboardData() async {
+
 
   }
 }

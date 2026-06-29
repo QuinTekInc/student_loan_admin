@@ -1,21 +1,19 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/bloc/applications_bloc.dart';
 import 'package:loan_admin/components/text.dart';
 
 class RejectLoanApplicationDialog extends StatefulWidget {
-  const RejectLoanApplicationDialog({
-    super.key,
-    required this.applicationId,
-  });
 
-  final String applicationId;
+  const RejectLoanApplicationDialog({super.key, });
 
   @override
-  State<RejectLoanApplicationDialog> createState() =>
-      _RejectLoanApplicationDialogState();
+  State<RejectLoanApplicationDialog> createState() => _RejectLoanApplicationDialogState();
 }
 
 class _RejectLoanApplicationDialogState extends State<RejectLoanApplicationDialog> {
+
   final reasonController = TextEditingController();
   final commentController = TextEditingController();
 
@@ -97,7 +95,7 @@ class _RejectLoanApplicationDialogState extends State<RejectLoanApplicationDialo
                       const SizedBox(height: 4),
 
                       CustomText(
-                        "Application ID: ${widget.applicationId}",
+                        "Application ID: ${context.read<ReviewCubit>().loanApplication.applicationId}",
                         textColor: Colors.grey,
                       ),
                     ],
@@ -175,9 +173,7 @@ class _RejectLoanApplicationDialogState extends State<RejectLoanApplicationDialo
               controller: reasonController,
               maxLines: 4,
               decoration: InputDecoration(
-                labelText:
-                "Detailed Rejection Reason",
-
+                labelText: "Detailed Rejection Reason",
                 border: OutlineInputBorder(
                   borderRadius:
                   BorderRadius.circular(14),
@@ -185,23 +181,7 @@ class _RejectLoanApplicationDialogState extends State<RejectLoanApplicationDialo
               ),
             ),
 
-            const SizedBox(height: 18),
 
-            TextField(
-              controller: commentController,
-
-              maxLines: 3,
-
-              decoration: InputDecoration(
-                labelText:
-                "Internal Admin Notes (Optional)",
-
-                border: OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius.circular(14),
-                ),
-              ),
-            ),
 
             const SizedBox(height: 22),
 

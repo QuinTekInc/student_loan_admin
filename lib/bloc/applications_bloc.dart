@@ -168,7 +168,17 @@ class ReviewCubit extends Cubit<ReviewState>{
 
   }
 
-  void rejectApplication(String rejectionReason){
+  void rejectApplication(String rejectionReason) async {
+
+    try{
+      await Repository.rejectApplication(
+        applicationId: loanApplication.applicationId,
+        rejectionReason: rejectionReason,
+      );
+    }catch(e, trace){
+      debugPrintStack(stackTrace: trace);
+      rethrow;
+    }
 
   }
 }
