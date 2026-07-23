@@ -1,10 +1,12 @@
 class User {
-  String firstName;
-  String lastName;
-  String username;
-  String email;
-  String role;
+  final String firstName;
+  final String lastName;
+  final String username;
+  final String email;
+  final String role;
   String status;
+
+  String get fullName => '$lastName $firstName';
 
   User({
     required this.firstName,
@@ -44,6 +46,17 @@ class AppNotification {
     required this.createdAt,
   });
 
+  AppNotification copyWith({bool? isRead}) {
+    return AppNotification(
+      id: id,
+      notificationType: notificationType,
+      title: title,
+      message: message,
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt,
+    );
+  }
+
   factory AppNotification.fromJson(Map<String, dynamic> jsonMap) {
     return AppNotification(
       id: jsonMap['id'],
@@ -57,17 +70,20 @@ class AppNotification {
 }
 
 class DashboardModel {
-  final Map<String, dynamic> dashboardStats;
-  final List<LoanApplication>
-  recentApplications; //the first current applications
+  final DashboardStat dashboardStats;
+  //the first current applications
+  final List<LoanApplication> recentApplications;
+  final List<AuditLog> auditLogs;
 
   DashboardModel({
     required this.dashboardStats,
     required this.recentApplications,
+    required this.auditLogs,
   });
 
   factory DashboardModel.fromJson(Map<String, dynamic> jsonMap) {
     List<LoanApplication> applications = [];
+    List<AuditLog> auditLogs = [];
 
     if (jsonMap.containsKey('recent_applications')) {
       applications = List<dynamic>.from(jsonMap['recent_applications']!)
@@ -75,9 +91,44 @@ class DashboardModel {
           .toList();
     }
 
+    if (jsonMap.containsKey('audit_logs')) {
+      auditLogs = List<Map<String, dynamic>>.from(
+        jsonMap['audit_logs'],
+      ).map((logMap) => AuditLog.fromJson(logMap)).toList();
+    }
+
     return DashboardModel(
-      dashboardStats: Map<String, dynamic>.from(jsonMap['dashboard_stats']),
+      dashboardStats: DashboardStat.fromJson( 
+        Map<String, dynamic>.from(jsonMap['dashboard_stats'])
+      ),
+      auditLogs: auditLogs,
       recentApplications: applications,
+    );
+  }
+}
+
+class DashboardStat {
+  final int totalStudents;
+  final int totalLoanedAmount;
+  final int totalDisbursed;
+  final int totalPaid;
+  final int totalActiveLoans;
+
+  DashboardStat({
+    required this.totalStudents,
+    required this.totalLoanedAmount,
+    required this.totalDisbursed,
+    required this.totalPaid,
+    required this.totalActiveLoans,
+  });
+
+  factory DashboardStat.fromJson(Map<String, dynamic> jsonMap) {
+    return DashboardStat(
+      totalStudents: jsonMap['total_students'],
+      totalActiveLoans: jsonMap['total_active_loans'], 
+      totalLoanedAmount: jsonMap['total_loaned_amount'],
+      totalDisbursed: jsonMap['total_disbursed'],
+      totalPaid: jsonMap['total_paid'], 
     );
   }
 }
@@ -120,7 +171,7 @@ class LoanApplication {
 }
 
 String prettyFormat(String s) {
-  String formatted = '';
+  String formatted = s;
 
   if (s.contains('_')) {
     formatted = formatted.replaceAll("_", " ");
@@ -158,11 +209,14 @@ class Loan {
   double approvedAmount;
   double interestRate;
   double totalAmount;
+  double amountPaid;
   int duration;
   String status;
   DateTime? nextPayment;
   DateTime createdAt;
   DateTime? updatedAt;
+
+  double get amountRemaing => totalAmount - amountPaid;
 
   Loan({
     required this.loanId,
@@ -172,6 +226,7 @@ class Loan {
     required this.approvedAmount,
     required this.interestRate,
     required this.totalAmount,
+    required this.amountPaid,
     required this.duration,
     required this.status,
     this.nextPayment,
@@ -188,12 +243,13 @@ class Loan {
       approvedAmount: (jsonMap['approved_amount'] as num).toDouble(),
       interestRate: (jsonMap['interest_rate'] as num).toDouble(),
       totalAmount: (jsonMap['total_amount'] as num).toDouble(),
+      amountPaid: (jsonMap['amount_paid'] as num).toDouble(),
       duration: (jsonMap['duration'] as num).toInt(),
-      status: jsonMap['status'],
+      status: jsonMap['loan_status'],
       nextPayment: null,
       createdAt: DateTime.parse(jsonMap['created_at']),
       updatedAt: jsonMap['updated_at'] != null
-          ? DateTime.parse('updated_at')
+          ? DateTime.parse(jsonMap['updated_at'])
           : null,
     );
   }
@@ -219,6 +275,21 @@ class LoanPayment {
     required this.createdAt,
     required this.updatedAt,
   });
+
+  factory LoanPayment.fromJson(Map<String, dynamic> jsonMap) {
+    return LoanPayment(
+      paymentId: jsonMap['id'],
+      loanId: jsonMap['loan_id'],
+      studentId: jsonMap['student_id'],
+      amount: jsonMap['amount'],
+      paymentMethod: jsonMap['payment_method'],
+      status: jsonMap['status'],
+      createdAt: jsonMap['created_at'],
+      updatedAt: jsonMap['updated_at'] == null
+          ? null
+          : DateTime.parse(jsonMap['updated_at']),
+    );
+  }
 }
 
 enum PaymentMethod {
@@ -439,6 +510,41 @@ class DocumentFraudDetectionAnalysis {
       riskScore: riskScore,
       indicators: indicators,
       requiresManualReview: isManual,
+    );
+  }
+}
+
+class AuditLog {
+  final String id;
+  final String actorUsername;
+  final String action;
+  final String description;
+  final String targetModel;
+  final String targetId;
+  final String affectedUser;
+  final DateTime createdAt;
+
+  AuditLog({
+    required this.id,
+    required this.actorUsername,
+    required this.action,
+    required this.description,
+    required this.targetModel,
+    required this.targetId,
+    required this.affectedUser,
+    required this.createdAt,
+  });
+
+  factory AuditLog.fromJson(Map<String, dynamic> jsonMap) {
+    return AuditLog(
+      id: jsonMap['id'],
+      actorUsername: jsonMap['actor'],
+      action: jsonMap['action'],
+      description: jsonMap['description'],
+      targetModel: jsonMap['target_model'],
+      targetId: jsonMap['target_id'],
+      affectedUser: jsonMap['affected_user'],
+      createdAt: DateTime.parse(jsonMap['created_at']),
     );
   }
 }

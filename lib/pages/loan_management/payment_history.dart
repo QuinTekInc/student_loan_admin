@@ -1,34 +1,25 @@
-
 import 'package:flutter/material.dart';
 import 'package:loan_admin/components/text.dart';
+import 'package:loan_admin/models/models.dart';
 
 class PaymentHistoryPage extends StatelessWidget {
-  final String loanId;
+  final Loan loan;
 
-  const PaymentHistoryPage({
-    super.key,
-    required this.loanId,
-  });
+  const PaymentHistoryPage({super.key, required this.loan});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: 16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 24,
         children: [
-
-          HeaderText("Payment History"),
-
-          const SizedBox(height: 6),
-
-          CustomText(
-            "Loan ID: $loanId",
-            textColor: Colors.grey,
+          FragementHeader(
+            title: 'Payment History',
+            subtitle: 'View all payments  for a loan',
           ),
-
-          const SizedBox(height: 20),
 
           Expanded(
             child: SingleChildScrollView(
@@ -36,19 +27,63 @@ class PaymentHistoryPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 mainAxisSize: MainAxisSize.max,
+                spacing: 20,
                 children: [
+
+                  _loanHeader(),
 
                   _summaryCards(),
 
-                  const SizedBox(height: 20),
-
                   _filters(),
-
-                  const SizedBox(height: 20),
 
                   _paymentTable(),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _loanHeader() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CustomText("Loan ID", textColor: Colors.grey),
+
+                SizedBox(height: 6),
+
+                CustomText(
+                  loan.loanId,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ],
+            ),
+          ),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: CustomText(
+              loan.status.toUpperCase(),
+              textColor: Colors.green,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -66,7 +101,6 @@ class PaymentHistoryPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-
           Expanded(
             flex: 3,
             child: TextField(
@@ -98,10 +132,19 @@ class PaymentHistoryPage extends StatelessWidget {
                 ),
               ),
               items: const [
-                DropdownMenuItem(value: "All Methods", child: Text("All Methods")),
+                DropdownMenuItem(
+                  value: "All Methods",
+                  child: Text("All Methods"),
+                ),
                 DropdownMenuItem(value: "Cash", child: Text("Cash")),
-                DropdownMenuItem(value: "Mobile Money", child: Text("Mobile Money")),
-                DropdownMenuItem(value: "Bank Transfer", child: Text("Bank Transfer")),
+                DropdownMenuItem(
+                  value: "Mobile Money",
+                  child: Text("Mobile Money"),
+                ),
+                DropdownMenuItem(
+                  value: "Bank Transfer",
+                  child: Text("Bank Transfer"),
+                ),
               ],
               onChanged: (_) {},
             ),
@@ -122,8 +165,14 @@ class PaymentHistoryPage extends StatelessWidget {
                 ),
               ),
               items: const [
-                DropdownMenuItem(value: "All Status", child: Text("All Status")),
-                DropdownMenuItem(value: "Successful", child: Text("Successful")),
+                DropdownMenuItem(
+                  value: "All Status",
+                  child: Text("All Status"),
+                ),
+                DropdownMenuItem(
+                  value: "Successful",
+                  child: Text("Successful"),
+                ),
                 DropdownMenuItem(value: "Pending", child: Text("Pending")),
                 DropdownMenuItem(value: "Failed", child: Text("Failed")),
               ],
@@ -139,7 +188,6 @@ class PaymentHistoryPage extends StatelessWidget {
   Widget _summaryCards() {
     return Row(
       children: [
-
         Expanded(child: _stat("Total Paid", "GHS 7,600", Colors.green)),
         const SizedBox(width: 12),
 
@@ -163,7 +211,6 @@ class PaymentHistoryPage extends StatelessWidget {
       ),
       child: Column(
         children: [
-
           CustomText(
             value,
             fontWeight: FontWeight.bold,
@@ -173,10 +220,7 @@ class PaymentHistoryPage extends StatelessWidget {
 
           const SizedBox(height: 6),
 
-          CustomText(
-            title,
-            textColor: Colors.grey,
-          ),
+          CustomText(title, textColor: Colors.grey),
         ],
       ),
     );
@@ -193,7 +237,6 @@ class PaymentHistoryPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           const CustomText(
             "Transactions",
             fontWeight: FontWeight.bold,
@@ -213,13 +256,40 @@ class PaymentHistoryPage extends StatelessWidget {
               5: FlexColumnWidth(2),
             },
             children: [
-
               _rowHeader(),
 
-              _row("TXN-001", "GHS 800", "Cash", "Jan 2026", "Successful", Colors.green),
-              _row("TXN-002", "GHS 800", "Mobile Money", "Feb 2026", "Successful", Colors.green),
-              _row("TXN-003", "GHS 800", "Bank Transfer", "Mar 2026", "Pending", Colors.orange),
-              _row("TXN-004", "GHS 800", "Cash", "Apr 2026", "Failed", Colors.red),
+              _row(
+                "TXN-001",
+                "GHS 800",
+                "Cash",
+                "Jan 2026",
+                "Successful",
+                Colors.green,
+              ),
+              _row(
+                "TXN-002",
+                "GHS 800",
+                "Mobile Money",
+                "Feb 2026",
+                "Successful",
+                Colors.green,
+              ),
+              _row(
+                "TXN-003",
+                "GHS 800",
+                "Bank Transfer",
+                "Mar 2026",
+                "Pending",
+                Colors.orange,
+              ),
+              _row(
+                "TXN-004",
+                "GHS 800",
+                "Cash",
+                "Apr 2026",
+                "Failed",
+                Colors.red,
+              ),
             ],
           ),
         ],
@@ -231,7 +301,6 @@ class PaymentHistoryPage extends StatelessWidget {
     return TableRow(
       decoration: BoxDecoration(color: Colors.grey.shade100),
       children: const [
-
         Padding(
           padding: EdgeInsets.all(10),
           child: CustomText("Ref ID", fontWeight: FontWeight.bold),
@@ -266,35 +335,22 @@ class PaymentHistoryPage extends StatelessWidget {
   }
 
   TableRow _row(
-      String ref,
-      String amount,
-      String method,
-      String date,
-      String status,
-      Color color,
-      ) {
+    String ref,
+    String amount,
+    String method,
+    String date,
+    String status,
+    Color color,
+  ) {
     return TableRow(
       children: [
+        Padding(padding: const EdgeInsets.all(10), child: CustomText(ref)),
 
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: CustomText(ref),
-        ),
+        Padding(padding: const EdgeInsets.all(10), child: CustomText(amount)),
 
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: CustomText(amount),
-        ),
+        Padding(padding: const EdgeInsets.all(10), child: CustomText(method)),
 
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: CustomText(method),
-        ),
-
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: CustomText(date),
-        ),
+        Padding(padding: const EdgeInsets.all(10), child: CustomText(date)),
 
         Padding(
           padding: const EdgeInsets.all(10),

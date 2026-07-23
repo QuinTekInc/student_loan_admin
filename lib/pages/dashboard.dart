@@ -1,11 +1,14 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/bloc/dashboard_bloc.dart';
+import 'package:loan_admin/components/app_colors.dart';
+import 'package:loan_admin/components/placeholders.dart';
+import 'package:loan_admin/models/models.dart';
+import 'package:loan_admin/pages/notifications_page.dart';
 
 import '../components/text.dart';
 
-
 class DashboardPage extends StatefulWidget {
-
   const DashboardPage({super.key});
 
   @override
@@ -13,34 +16,53 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-
   int selectedIndex = 0;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(12),
-      child: SingleChildScrollView(
-        child: Column(
-          spacing: 12,
-          children: [
+      child: BlocBuilder<DashboardCubit, DashboardState>(
+        builder: (_, state) {
+          if (state is DashboardLoading) {
+            return Center(child: LoadingPlaceholder());
+          }
 
-            buildAdminWelcome(),
+          if (state is DashboardError) {
+            return Center(
+              child: MessagePlaceholder.error(
+                message: state.message,
+                onButtonPressed: () =>
+                    context.read<DashboardCubit>().fetchDashboardData(),
+              ),
+            );
+          }
 
-            buildAdminStats(),
+          return _buildContent();
+        },
+      ),
+    );
+  }
 
-            buildAdminMiddle(),
+  Widget _buildContent() {
+    return SingleChildScrollView(
+      child: Column(
+        spacing: 12,
+        children: [
+          buildAdminWelcome(),
 
-            buildAdminBottom()
-          ],
-        ),
+          buildAdminStats(),
+
+          buildAdminMiddle(),
+
+          buildAdminBottom(),
+        ],
       ),
     );
   }
@@ -63,7 +85,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 HeaderText(
                   "Admin Dashboard 👨‍💼",
                   fontSize: 28,
-                  textColor: Colors.white
+                  textColor: Colors.white,
                 ),
                 SizedBox(height: 10),
                 CustomText(
@@ -78,37 +100,50 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-
   Widget buildAdminStats() {
-    final stats = [
-      DashboardStat(
+    final stats = (context.read<DashboardCubit>().state as DashboardLoaded)
+        .dashboardModel
+        .dashboardStats;
+
+    final statCards = [
+      DashboardStatCard(
         title: "Total Users",
-        value: "1,240",
+        value: stats.totalStudents.toString(),
         subtitle: "Registered students",
         icon: Icons.people_outline,
       ),
-      DashboardStat(
-        title: "Active Loans",
-        value: "830",
-        subtitle: "Currently running",
-        icon: Icons.account_balance_wallet_outlined,
-      ),
-      DashboardStat(
+
+      DashboardStatCard(
         title: "Pending Applications",
         value: "56",
         subtitle: "Awaiting approval",
         icon: Icons.pending_actions_outlined,
       ),
-      DashboardStat(
+
+      DashboardStatCard(
+        title: "Active Loans",
+        value: stats.totalActiveLoans.toString(),
+        subtitle: "Currently running",
+        icon: Icons.account_balance_wallet_outlined,
+      ),
+
+      DashboardStatCard(
         title: "Total Disbursed",
-        value: "GHS 2.4M",
+        value: "GHS ${stats.totalDisbursed}",
         subtitle: "Loans issued",
         icon: Icons.trending_up,
       ),
+
+      // DashboardStatCard(
+      //   title: '',
+      //   value: 'GHS 0.00',
+      //   subtitle: 'Amounts paid out the loans issued',
+      //   icon: Icons.payment
+      // )
     ];
 
     return GridView.builder(
-      itemCount: stats.length,
+      itemCount: statCards.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -117,12 +152,11 @@ class _DashboardPageState extends State<DashboardPage> {
         mainAxisSpacing: 18,
         childAspectRatio: 1.45,
       ),
-      itemBuilder: (_, index) => buildStatCard(stats[index]),
+      itemBuilder: (_, index) => buildStatCard(statCards[index]),
     );
   }
 
-
-  Widget buildStatCard(DashboardStat item) {
+  Widget buildStatCard(DashboardStatCard item) {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -133,7 +167,7 @@ class _DashboardPageState extends State<DashboardPage> {
             color: Color(0x0E000000),
             blurRadius: 14,
             offset: Offset(0, 8),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -149,29 +183,20 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Icon(item.icon, color: Colors.green.shade700),
           ),
           const Spacer(),
-          CustomText(
-            item.title,
-            textColor: Colors.black54,
-          ),
+          CustomText(item.title, textColor: Colors.black54),
           const SizedBox(height: 6),
-          CustomText(
-            item.value,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          CustomText(item.value, fontSize: 24, fontWeight: FontWeight.bold),
           const SizedBox(height: 6),
-          CustomText(
-            item.subtitle,
-            fontSize: 13,
-          ),
+          CustomText(item.subtitle, fontSize: 13),
         ],
       ),
     );
   }
 
-
   Widget buildAdminMiddle() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(flex: 2, child: buildRecentApplications()),
         const SizedBox(width: 18),
@@ -203,26 +228,64 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-
   Widget buildRecentApplications() {
-    final apps = [
-      ("Kwame Mensah", "Pending"),
-      ("Ama Serwaa", "Approved"),
-      ("Kojo Asante", "Rejected"),
-    ];
+    final recent_applications =
+        (context.read<DashboardCubit>().state as DashboardLoaded)
+            .dashboardModel
+            .recentApplications;
 
     return dashboardCard(
       title: "Recent Applications",
       child: Column(
-        children: apps.map((app) {
+        children: recent_applications.map((app) {
           return ListTile(
             contentPadding: EdgeInsets.zero,
             leading: CircleAvatar(
               backgroundColor: Colors.green.shade100,
-              child: CustomText(app.$1[0], fontSize: 18, fontWeight: FontWeight.w600,),
+              child: CustomText(
+                app.studentName[0],
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            title: CustomText(app.$1),
-            subtitle: CustomText(app.$2),
+            title: CustomText(
+              app.studentName,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              padding: EdgeInsets.zero,
+            ),
+            subtitle: RichText(  
+              text: TextSpan(  
+                text: 'GHS ${app.amountRequested}\t',
+                style: TextStyle( 
+                  fontSize: 13, 
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w600, 
+                  fontFamily: 'Poppins'
+                ), 
+
+                children: [
+                  TextSpan(  
+                    text: '\u2022 ${app.loanReason}\t',
+                    style: TextStyle( 
+                      color: Colors.grey.shade500,
+                      fontWeight: FontWeight.normal
+                    )
+                  ),
+
+
+                  //TODO: add apply the status color here.
+                  TextSpan(  
+                    text: '\u2022 ${app.status}',
+                    style: TextStyle( 
+                      color: applicationStatusColor(app.status),
+                      fontWeight: FontWeight.w600
+                    )
+                  )
+                ]
+                
+              ),
+            ),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
           );
         }).toList(),
@@ -230,60 +293,54 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-
-
   Widget buildAdminBottom() {
+
+    final auditLogs = 
+        (context.read<DashboardCubit>().state as DashboardLoaded)
+            .dashboardModel
+            .auditLogs;
+
     return dashboardCard(
       title: "System Activity",
       child: Column(
-        children: [
-
-          ListTile(
-            leading: Icon(
-              Icons.history,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
-              size: 30,
-            ),
-
-            title: CustomText("Loan approved for Ama Serwaa"),
-            subtitle: Text("2 mins ago"),
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 8,
+        children: auditLogs.map((auditLog) => ListTile(  
+          leading: Icon(
+            Icons.history, 
+            fontWeight: FontWeight.bold, 
+            size: 30,
+            color: Colors.grey.shade600,
           ),
 
-          ListTile(
-            leading: Icon(
-              Icons.history,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
-              size: 30,
-            ),
-
-            title: CustomText("New user registered"),
-            subtitle: Text("10 mins ago"),
+          title: CustomText( 
+            auditLog.action,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
           ),
 
-
-          ListTile(
-            leading: Icon(
-              Icons.history,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
-              size: 30,
-            ),
-            title: CustomText("Payment received"),
-            subtitle: Text("30 mins ago"),
+          subtitle: Column(  
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 3,
+            children: [
+              CustomText(
+                auditLog.description
+              ), 
+              CustomText( 
+                formatDate(auditLog.createdAt),
+                fontStyle: FontStyle.italic,
+              )
+            ],
           ),
-        ],
+        )).toList()
+        
       ),
     );
   }
 
-
-
-  Widget dashboardCard({
-    required String title,
-    required Widget child,
-  }) {
+  Widget dashboardCard({required String title, required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
@@ -295,36 +352,31 @@ class _DashboardPageState extends State<DashboardPage> {
             color: Color(0x0E000000),
             blurRadius: 14,
             offset: Offset(0, 8),
-          )
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          HeaderText(
-            title,
-            fontSize: 19,
-          ),
+          HeaderText(title, fontSize: 19),
           const SizedBox(height: 22),
           child,
         ],
       ),
     );
   }
-
 }
 
-
-class DashboardStat{
+class DashboardStatCard {
   IconData icon;
   String title;
   String subtitle;
   String value;
 
-  DashboardStat({
+  DashboardStatCard({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.value
+    required this.value,
   });
 }

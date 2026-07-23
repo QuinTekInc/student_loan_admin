@@ -1,15 +1,18 @@
-
 import 'package:flutter/material.dart';
 import 'package:loan_admin/bloc/applications_bloc.dart';
 import 'package:loan_admin/bloc/navigation_bloc.dart';
+import 'package:loan_admin/components/app_colors.dart';
 import 'package:loan_admin/components/placeholders.dart';
+import 'package:loan_admin/components/shared_functions.dart';
 import 'package:loan_admin/components/text.dart';
 import 'package:loan_admin/models/models.dart';
 import 'package:loan_admin/pages/application_management/loan_review.page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/pages/dialogs/application_approval_dialog.dart';
+import 'package:loan_admin/pages/dialogs/application_rejection_dialog.dart';
+import 'package:loan_admin/pages/dialogs/notification_dialog.dart';
 
 class LoanApplicationPage extends StatefulWidget {
-
   const LoanApplicationPage({super.key});
 
   @override
@@ -17,7 +20,6 @@ class LoanApplicationPage extends StatefulWidget {
 }
 
 class _LoanApplicationPageState extends State<LoanApplicationPage> {
-
   final searchController = TextEditingController();
 
   @override
@@ -36,42 +38,31 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          HeaderText(
-            "Loan Applications",
-            fontSize: 30
+          FragementHeader(
+            title: 'Loan Applications',
+            subtitle: 'Review and Manage loan applications',
           ),
-
-          const SizedBox(height: 8),
-
-          CustomText(
-            "Review and manage student loan applications.",
-            textColor: Colors.black54,
-            fontSize: 15,
-          ),
-
-          const SizedBox(height: 24,),
-
 
           Expanded(
             child: BlocBuilder<LoanApplicationsCubit, LoanApplicationsState>(
-              builder: (_, state){
+              builder: (_, state) {
+                if (state is LoanApplicationsLoading) {
+                  return LoadingPlaceholder();
+                }
 
-                if(state is LoanApplicationsLoading) return LoadingPlaceholder();
-
-                if(state is LoanApplicationsError){
+                if (state is LoanApplicationsError) {
                   return MessagePlaceholder.error(
                     message: state.message,
-                    onButtonPressed: () => context.read<LoanApplicationsCubit>().fetchLoanApplications(),
+                    onButtonPressed: () => context
+                        .read<LoanApplicationsCubit>()
+                        .fetchLoanApplications(),
                   );
                 }
 
                 return _buildContent();
-              }
+              },
             ),
-          )
-
-          ,
+          ),
         ],
       ),
     );
@@ -83,7 +74,6 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           _buildStatistics(),
 
           const SizedBox(height: 24),
@@ -99,8 +89,8 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
   }
 
   Widget _buildStatistics() {
-
-    LoanApplicationsLoaded appsLoaded = context.read<LoanApplicationsCubit>().state as LoanApplicationsLoaded;
+    LoanApplicationsLoaded appsLoaded =
+        context.read<LoanApplicationsCubit>().state as LoanApplicationsLoaded;
 
     return Row(
       spacing: 16,
@@ -110,10 +100,9 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
             "Pending Review",
             appsLoaded.pendingApplicationCount.toString(),
             Icons.pending_actions_outlined,
-            Colors.orange,
+            Colors.blue,
           ),
         ),
-
 
         Expanded(
           child: _buildStatCard(
@@ -124,7 +113,6 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
           ),
         ),
 
-
         Expanded(
           child: _buildStatCard(
             "Approved",
@@ -133,7 +121,6 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
             Colors.green,
           ),
         ),
-
 
         Expanded(
           child: _buildStatCard(
@@ -144,13 +131,12 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
           ),
         ),
 
-
         Expanded(
           child: _buildStatCard(
             "Unknown",
             appsLoaded.unknownApplicationCount.toString(),
             Icons.warning_outlined,
-            Colors.blue,
+            Colors.orange,
           ),
         ),
       ],
@@ -158,11 +144,11 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
   }
 
   Widget _buildStatCard(
-      String title,
-      String value,
-      IconData icon,
-      Color color,
-      ) {
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -173,7 +159,7 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
             color: Color(0x12000000),
             blurRadius: 12,
             offset: Offset(0, 6),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -189,19 +175,11 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              CustomText(value, fontSize: 24, fontWeight: FontWeight.bold),
 
-              CustomText(
-                value,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-
-              CustomText(
-                title,
-                textColor: Colors.black54,
-              )
+              CustomText(title, textColor: Colors.black54),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -218,7 +196,7 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
             color: Color(0x12000000),
             blurRadius: 12,
             offset: Offset(0, 6),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -254,24 +232,14 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
                 ),
               ),
               items: const [
-                DropdownMenuItem(
-                  value: "All",
-                  child: Text("All Statuses"),
-                ),
-                DropdownMenuItem(
-                  value: "Pending",
-                  child: Text("Pending"),
-                ),
-                DropdownMenuItem(
-                  value: "Approved",
-                  child: Text("Approved"),
-                ),
-                DropdownMenuItem(
-                  value: "Rejected",
-                  child: Text("Rejected"),
-                ),
+                DropdownMenuItem(value: "All", child: Text("All Statuses")),
+                DropdownMenuItem(value: "Pending", child: Text("Pending")),
+                DropdownMenuItem(value: "Approved", child: Text("Approved")),
+                DropdownMenuItem(value: "Rejected", child: Text("Rejected")),
               ],
-              onChanged: (_) {},
+              onChanged: (_) {
+                //TODO: Program the sorting.
+              },
             ),
           ),
         ],
@@ -280,6 +248,10 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
   }
 
   Widget _buildApplicationsTable() {
+    final loanApplications =
+        (context.read<LoanApplicationsCubit>().state as LoanApplicationsLoaded)
+            .applications;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -290,53 +262,33 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
             color: Color(0x12000000),
             blurRadius: 12,
             offset: Offset(0, 6),
-          )
+          ),
         ],
       ),
       child: Column(
         children: [
           Row(
             children: const [
+              Expanded(flex: 2, child: CustomText("Application ID")),
               Expanded(
-                flex: 2,
-                child: CustomText(
-                  "Application ID",
-                ),
+                flex: 3,
+                child: CustomText("Student", fontWeight: FontWeight.bold),
               ),
               Expanded(
                 flex: 3,
-                child: CustomText(
-                  "Student",
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Expanded(
-                flex: 3,
-                child: CustomText(
-                  "Institution",
-                  fontWeight: FontWeight.bold,
-                ),
+                child: CustomText("Institution", fontWeight: FontWeight.bold),
               ),
               Expanded(
                 flex: 2,
-                child: CustomText(
-                  "Amount",
-                  fontWeight: FontWeight.bold,
-                ),
+                child: CustomText("Amount", fontWeight: FontWeight.bold),
               ),
               Expanded(
                 flex: 2,
-                child: CustomText(
-                  "Status",
-                  fontWeight: FontWeight.bold,
-                ),
+                child: CustomText("Status", fontWeight: FontWeight.bold),
               ),
               Expanded(
-                flex: 2,
-                child: CustomText(
-                  "Actions",
-                  fontWeight: FontWeight.bold,
-                ),
+                flex: 1,
+                child: CustomText("Actions", fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -344,33 +296,30 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
           const Divider(height: 30),
 
           ...List.generate(
-            (context.read<LoanApplicationsCubit>().state as LoanApplicationsLoaded).applications.length,
-            (index) => LoanApplicationCell(
-              loanApplication: (context.read<LoanApplicationsCubit>().state as LoanApplicationsLoaded).applications[index],
-            ),
-          )
+            loanApplications.length,
+            (index) =>
+                LoanApplicationCell(loanApplication: loanApplications[index]),
+          ),
         ],
       ),
     );
   }
-
 }
 
-
-
 class LoanApplicationCell extends StatelessWidget {
-
   final LoanApplication loanApplication;
 
   const LoanApplicationCell({super.key, required this.loanApplication});
 
   @override
   Widget build(BuildContext context) {
+    final statusColor = applicationStatusColor(loanApplication.status);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         children: [
-
+          //==========Loan Application ID==========
           Expanded(
             flex: 2,
             child: CustomText(
@@ -381,70 +330,63 @@ class LoanApplicationCell extends StatelessWidget {
             ),
           ),
 
-          //todo: to be changed to the student name object
+          //============Student Name=================
+          Expanded(flex: 3, child: CustomText(loanApplication.studentName)),
+
+          //============Institution=================
           Expanded(
             flex: 3,
-            child: CustomText(loanApplication.studentName),
+            child: CustomText("University of Energy and Natural Resources"),
           ),
 
+          //============Amount Requested=================
           Expanded(
-            flex: 3,
+            flex: 2,
             child: CustomText(
-              "University of Energy and Natural Resources",
+              loanApplication.amountRequested.toStringAsFixed(2),
             ),
           ),
 
-
-          Expanded(
-            flex: 2,
-            child: CustomText(loanApplication.amountRequested.toStringAsFixed(2)),
-          ),
-
+          //============Application Status=================
           Expanded(
             flex: 2,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: statusColor.withOpacity(.12),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: CustomText(
                 loanApplication.status,
                 textAlignment: TextAlign.center,
-                textColor: Colors.orange.shade800,
+                textColor: statusColor,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
 
+          //============Actions=================
           Expanded(
-            flex: 2,
+            flex: 1,
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-
                 IconButton(
                   icon: const Icon(Icons.visibility_outlined),
                   onPressed: () => context.read<NavigationCubit>().push(
                     BlocProvider(
-                      create: (_) => ReviewCubit(loanApplication) ,
+                      create: (_) => ReviewCubit(loanApplication),
                       child: LoanApplicationReview(),
-                    )
+                    ),
                   ),
                 ),
-
 
                 IconButton(
                   icon: const Icon(Icons.more_vert),
                   onPressed: () => showModalBottomSheet(
                     context: context,
-                    builder: (_) => _LoanApplicationSheet(
-                      applicationId: loanApplication.applicationId,
-                      studentName: loanApplication.studentName,
-                      status: loanApplication.status
-                    )
+                    builder: (_) =>
+                        _LoanApplicationSheet(application: loanApplication),
                   ),
                 ),
               ],
@@ -456,43 +398,29 @@ class LoanApplicationCell extends StatelessWidget {
   }
 }
 
-
-
-
-
 class _LoanApplicationSheet extends StatelessWidget {
-  const _LoanApplicationSheet({
-    required this.applicationId,
-    required this.studentName,
-    required this.status,
-  });
+  final LoanApplication application;
 
-  final String applicationId;
-  final String studentName;
-  final String status;
+  const _LoanApplicationSheet({required this.application});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 540,
+      height: 500,
 
       decoration: const BoxDecoration(
         color: Colors.white,
 
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(32),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
 
       child: Padding(
         padding: const EdgeInsets.all(24),
 
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
             Center(
               child: Container(
                 width: 80,
@@ -501,8 +429,7 @@ class _LoanApplicationSheet extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
 
-                  borderRadius:
-                  BorderRadius.circular(50),
+                  borderRadius: BorderRadius.circular(50),
                 ),
               ),
             ),
@@ -511,7 +438,6 @@ class _LoanApplicationSheet extends StatelessWidget {
 
             Row(
               children: [
-
                 Container(
                   height: 60,
                   width: 60,
@@ -521,68 +447,47 @@ class _LoanApplicationSheet extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
 
-                  child: Icon(
-                    Icons.description,
-                    color:
-                    Colors.green.shade700,
-                  ),
+                  child: Icon(Icons.description, color: Colors.green.shade700),
                 ),
 
                 const SizedBox(width: 16),
 
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
 
                     children: [
+                      HeaderText("Loan Application"),
 
-                      HeaderText(
-                        "Loan Application",
-                      ),
-
-                      const SizedBox(
-                        height: 4,
-                      ),
+                      const SizedBox(height: 4),
 
                       CustomText(
-                        applicationId,
-                        textColor:
-                        Colors.grey,
+                        application.applicationId,
+                        textColor: Colors.grey,
                       ),
 
-                      const SizedBox(
-                        height: 4,
-                      ),
+                      const SizedBox(height: 4),
 
-                      CustomText(
-                        studentName,
-                      ),
+                      CustomText(application.studentName),
                     ],
                   ),
                 ),
 
                 Container(
-                  padding:
-                  const EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 8,
                   ),
 
                   decoration: BoxDecoration(
-                    color:
-                    Colors.orange.shade50,
+                    color: Colors.orange.shade50,
 
-                    borderRadius:
-                    BorderRadius.circular(
-                      50,
-                    ),
+                    borderRadius: BorderRadius.circular(50),
                   ),
 
                   child: CustomText(
-                    status,
-                    textColor:
-                    Colors.orange,
+                    application.status,
+                    textColor: Colors.orange,
                   ),
                 ),
               ],
@@ -601,92 +506,87 @@ class _LoanApplicationSheet extends StatelessWidget {
                 childAspectRatio: 2.5,
 
                 children: [
-
                   _action(
                     context,
                     icon: Icons.visibility,
-                    title:
-                    "View Application",
-                    onTap: () {},
+                    title: "View Application",
+                    onTap: () async {},
+                  ),
+
+                  // _action(
+                  //   context,
+                  //   icon: Icons.fact_check,
+                  //   title: "Review",
+                  //   onTap: () {},
+                  // ),
+                  if (!['approved', 'rejected'].contains(application.status))
+                    _action(
+                      context,
+                      icon: Icons.check_circle,
+                      title: "Approve",
+                      color: Colors.green,
+                      onTap: () => handleApproveApplication(context),
+                    ),
+
+                  if (!['approved', 'rejected'].contains(application.status))
+                    _action(
+                      context,
+                      icon: Icons.cancel,
+                      title: "Reject",
+                      color: Colors.red,
+                      onTap: () => handleRejectApplication(context),
+                    ),
+
+                  // _action(
+                  //   context,
+                  //   icon:
+                  //   Icons.folder,
+                  //   title:
+                  //   "Documents",
+                  //   onTap: () {},
+                  // ),
+
+                  // _action(
+                  //   context,
+                  //   icon:
+                  //   Icons.psychology,
+                  //   title:
+                  //   "AI Scan",
+                  //   onTap: () {},
+                  // ),
+                  _action(
+                    context,
+                    icon: Icons.person,
+                    title: "Student",
+                    onTap: () => SharedFunctions.handleOpenStudentProfile(
+                      context,
+                      studentId: application.studentId,
+                    ),
                   ),
 
                   _action(
                     context,
-                    icon:
-                    Icons.fact_check,
-                    title:
-                    "Review",
-                    onTap: () {},
+                    icon: Icons.notifications,
+                    title: "Notify",
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (_) => NotifyUserDialog.student(
+                        studentId: application.studentId,
+                        fullName: application.studentName,
+                      ),
+                    ),
                   ),
 
-                  _action(
-                    context,
-                    icon:
-                    Icons.check_circle,
-                    title:
-                    "Approve",
-                    color:
-                    Colors.green,
-                    onTap: () {},
-                  ),
+                  //TODO: if the current user of the system in superuser,
+                  //we give them the option to delete the application
 
-                  _action(
-                    context,
-                    icon:
-                    Icons.cancel,
-                    title:
-                    "Reject",
-                    color:
-                    Colors.red,
-                    onTap: () {},
-                  ),
-
-                  _action(
-                    context,
-                    icon:
-                    Icons.folder,
-                    title:
-                    "Documents",
-                    onTap: () {},
-                  ),
-
-                  _action(
-                    context,
-                    icon:
-                    Icons.psychology,
-                    title:
-                    "AI Scan",
-                    onTap: () {},
-                  ),
-
-                  _action(
-                    context,
-                    icon:
-                    Icons.person,
-                    title:
-                    "Student",
-                    onTap: () {},
-                  ),
-
-                  _action(
-                    context,
-                    icon:
-                    Icons.notifications,
-                    title:
-                    "Notify",
-                    onTap: () {},
-                  ),
-
-                  _action(
-                    context,
-                    icon:
-                    Icons.delete,
-                    title:
-                    "Delete",
-                    color:
-                    Colors.red,
-                    onTap: () {},
-                  ),
+                  // _action(
+                  //   context,
+                  //   icon: Icons.delete,
+                  //   title: "Delete",
+                  //   color: Colors.red,
+                  //   onTap: () {},
+                  // ),
                 ],
               ),
             ),
@@ -697,15 +597,14 @@ class _LoanApplicationSheet extends StatelessWidget {
   }
 
   Widget _action(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required VoidCallback onTap,
-        Color color = Colors.green,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color color = Colors.green,
+  }) {
     return InkWell(
-      borderRadius:
-      BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(18),
 
       onTap: () {
         Navigator.pop(context);
@@ -714,54 +613,54 @@ class _LoanApplicationSheet extends StatelessWidget {
       },
 
       child: Container(
-        padding:
-        const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(18),
 
         decoration: BoxDecoration(
           color: color.withOpacity(.08),
 
-          borderRadius:
-          BorderRadius.circular(
-            18,
-          ),
+          borderRadius: BorderRadius.circular(18),
         ),
 
         child: Row(
           children: [
-
             Container(
               height: 42,
               width: 42,
 
               decoration: BoxDecoration(
-                color:
-                color.withOpacity(
-                  .15,
-                ),
+                color: color.withOpacity(.15),
 
-                shape:
-                BoxShape.circle,
+                shape: BoxShape.circle,
               ),
 
-              child: Icon(
-                icon,
-                color: color,
-              ),
+              child: Icon(icon, color: color),
             ),
 
-            const SizedBox(
-              width: 14,
-            ),
+            const SizedBox(width: 14),
 
-            Expanded(
-              child: CustomText(
-                title,
-                fontWeight:
-                FontWeight.w600,
-              ),
-            ),
+            Expanded(child: CustomText(title, fontWeight: FontWeight.w600)),
           ],
         ),
+      ),
+    );
+  }
+
+  void handleApproveApplication(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => BlocProvider(
+        create: (_) => ReviewCubit(application),
+        child: LoanApprovalDialog(),
+      ),
+    );
+  }
+
+  void handleRejectApplication(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => BlocProvider(
+        create: (_) => ReviewCubit(application),
+        child: RejectLoanApplicationDialog(),
       ),
     );
   }

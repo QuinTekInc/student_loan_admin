@@ -35,7 +35,6 @@ class NotificationError extends NotificationState {
 }
 
 class NotificationCubit extends Cubit<NotificationState> {
-  
   final WebSocketService socketService = WebSocketService(
     endpoint: 'ws/notifications/',
     streamValidator: (item) => true,
@@ -44,8 +43,9 @@ class NotificationCubit extends Cubit<NotificationState> {
   NotificationCubit() : super(NotificationsInitial());
 
   void listenForNotifications() {
+
     try {
-      socketService.connect();
+      if(!socketService.isConnected) socketService.connect();
     } catch (e) {
       emit(NotificationError(e.toString()));
     }
@@ -64,37 +64,80 @@ class NotificationCubit extends Cubit<NotificationState> {
           newNotifications = decoded
               .map((jsonMap) => AppNotification.fromJson(jsonMap))
               .toList();
-        } else if (decoded is Map<String, dynamic>) {
-          newNotifications = [AppNotification.fromJson(decoded)];
-        }
 
-        if (currentState is! NotificationLoaded) {
           emit(NotificationLoaded(newNotifications));
+
           return;
         }
 
-        emit(
-          NotificationLoaded([
-            ...currentState.notifications,
-            ...newNotifications,
-          ]),
-        );
+        if (decoded is Map<String, dynamic>) {
+          final newNotification = AppNotification.fromJson(decoded);
+
+          if (currentState is! NotificationLoaded) {
+            emit(NotificationLoaded([newNotification]));
+            return;
+          }
+
+          emit(
+            NotificationLoaded([
+              ...currentState.notifications,
+              newNotification,
+            ]),
+          );
+        }
       },
+      cancelOnError: true,
       onError: (error) {
         emit(NotificationError(error.toString()));
         print('There was an error: ${error.toString()}');
       },
-      cancelOnError: true,
+      onDone: () => restartConnection(),
     );
   }
 
   void restartConnection() {
     socketService.connect();
-
     listenForNotifications();
   }
 
-  void setFilter(String filter) {
-    if (state is! NotificationLoaded) return;
+  void markAllAsRead() {
+    try {
+      socketService.send({'type': 'mark_all_as_read'});
+
+      if (state is! NotificationLoaded) return;
+
+      final updated = (state as NotificationLoaded).notifications
+          .map((notification) => notification.copyWith(isRead: true))
+          .toList();
+
+      emit(NotificationLoaded(updated));
+    } catch (_) {
+      rethrow;
+    }
+  }
+
+  void markAsRead({required String notificationId}) async {
+    try {
+      Map<String, dynamic> body = {
+        'type':'mark_as_read',
+        'id': notificationId
+      };
+
+      socketService.send(body);
+
+      if (state is! NotificationLoaded) return;
+
+      final updated = (state as NotificationLoaded).notifications.map((
+        notification,
+      ) {
+        if (notification.id != notificationId) return notification;
+
+        return notification.copyWith(isRead: true);
+      }).toList();
+
+      emit(NotificationLoaded(updated));
+    } catch (_) {
+      print('Coulld not mark notification "$notificationId" as read');
+    }
   }
 }

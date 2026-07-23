@@ -1,36 +1,79 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/bloc/users_bloc.dart';
+import 'package:loan_admin/components/placeholders.dart';
 import 'package:loan_admin/components/text.dart';
+import 'package:loan_admin/models/models.dart';
+import 'package:loan_admin/pages/notifications_page.dart';
 
-class AdminUserProfilePage extends StatelessWidget {
+class AdminUserProfilePage extends StatefulWidget {
   const AdminUserProfilePage({super.key});
 
   @override
+  State<AdminUserProfilePage> createState() => _AdminUserProfilePageState();
+}
+
+class _AdminUserProfilePageState extends State<AdminUserProfilePage> {
+  late User user;
+
+  @override
+  void initState() {
+    super.initState();
+
+    user = context.read<UserProfileCubit>().user;
+
+    context.read<UserProfileCubit>().fetchUserInfo();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 24,
+        children: [
+          HeaderText("Administrator Profile"),
+
+          Expanded(
+            child: BlocBuilder<UserProfileCubit, UserProfileState>(
+              builder: (_, state) {
+                if (state is UserProfileLoading) {
+                  return LoadingPlaceholder();
+                }
+
+                if (state is UserProfileError) {
+                  return MessagePlaceholder.error(
+                    message: state.message,
+                    onButtonPressed: () =>
+                        context.read<UserProfileCubit>().fetchUserInfo(),
+                  );
+                }
+
+                return buildContent();
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  SingleChildScrollView buildContent() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          HeaderText("Administrator Profile"),
-
-          const SizedBox(height: 24),
-
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              Expanded(
-                flex: 2,
-                child: _personalInformationCard(),
-              ),
+              Expanded(flex: 2, child: _personalInformationCard()),
 
               const SizedBox(width: 20),
 
-              Expanded(
-                child: _roleCard(),
-              ),
+              Expanded(child: _roleCard()),
             ],
           ),
 
@@ -56,40 +99,31 @@ class AdminUserProfilePage extends StatelessWidget {
 
   Widget _personalInformationCard() {
     return _sectionCard(
-      "Personal Information",
-      Column(
+      title: "Personal Information",
+      child: Column(
         children: [
-
           Row(
             children: [
-
               CircleAvatar(
                 radius: 40,
                 backgroundColor: Colors.green.shade100,
-                child: const Icon(
-                  Icons.admin_panel_settings,
-                  size: 40,
-                ),
+                child: const Icon(Icons.admin_panel_settings, size: 40),
               ),
 
               const SizedBox(width: 16),
 
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   CustomText(
-                    "Kwame Mensah",
+                    user.fullName,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
 
                   SizedBox(height: 4),
 
-                  CustomText(
-                    "ADM-001",
-                    textColor: Colors.grey,
-                  ),
+                  CustomText(user.username, textColor: Colors.grey),
                 ],
               ),
             ],
@@ -101,13 +135,11 @@ class AdminUserProfilePage extends StatelessWidget {
             spacing: 12,
             runSpacing: 12,
             children: [
-
-              _infoTile("Email", "kwame@loanboard.gov.gh"),
-              _infoTile("Phone", "+233 24 000 0000"),
-              _infoTile("Department", "Loan Processing"),
-              _infoTile("Position", "Senior Loan Officer"),
-              _infoTile("Joined", "12 Jan 2023"),
-              _infoTile("Status", "Active"),
+              _infoTile("Email", user.email),
+              _infoTile("Phone", ''),
+              _infoTile("Role", user.role),
+              //_infoTile("Joined", "12 Jan 2023"),
+              _infoTile("Status", user.status),
             ],
           ),
         ],
@@ -117,31 +149,32 @@ class AdminUserProfilePage extends StatelessWidget {
 
   Widget _roleCard() {
     return _sectionCard(
-      "Role & Permissions",
-      Column(
+      title: "Role & Permissions",
+      child: Column(
         children: [
-
           _permissionTile("Loan Application Review"),
           _permissionTile("Approve Applications"),
           _permissionTile("Reject Applications"),
           _permissionTile("Manage Students"),
-          _permissionTile("View Reports"),
-          _permissionTile("Manage Documents"),
+          _permissionTile("Manage Document and View reports"),
         ],
       ),
     );
   }
 
   Widget _statisticsCard() {
-    return _sectionCard(
-      "Account Statistics",
-      Row(
-        children: [
 
+    UserProfileLoaded loaded =
+        context.read<UserProfileCubit>().state as UserProfileLoaded;
+
+    return _sectionCard(
+      title: "Account Statistics",
+      child: Row(
+        children: [
           Expanded(
             child: _statCard(
               "Applications Reviewed",
-              "1,245",
+              loaded.statistics['total_reviews'].toString(),
               Icons.description_outlined,
               Colors.blue,
             ),
@@ -152,7 +185,7 @@ class AdminUserProfilePage extends StatelessWidget {
           Expanded(
             child: _statCard(
               "Approved",
-              "962",
+              loaded.statistics['approved'].toString(),
               Icons.check_circle_outline,
               Colors.green,
             ),
@@ -163,7 +196,7 @@ class AdminUserProfilePage extends StatelessWidget {
           Expanded(
             child: _statCard(
               "Rejected",
-              "283",
+              loaded.statistics['rejected'].toString(),
               Icons.cancel_outlined,
               Colors.red,
             ),
@@ -185,58 +218,34 @@ class AdminUserProfilePage extends StatelessWidget {
   }
 
   Widget _recentActivityCard() {
+
+    UserProfileLoaded loaded =
+        context.read<UserProfileCubit>().state as UserProfileLoaded;
+
     return _sectionCard(
-      "Recent Activity",
-      Column(
-        children: [
+      title:  "Recent Activity",
+      child: Column(
+        children: loaded.userActivities.map(
+          (activity) => _activityTile(
+            title: activity.description, 
+            time: formatTime(activity.createdAt)
+            )
+          ).toList()
 
-          _activityTile(
-            "Approved Application APP-2026-001",
-            "Today, 09:45 AM",
-          ),
-
-          _activityTile(
-            "Reviewed Student Documents",
-            "Today, 08:12 AM",
-          ),
-
-          _activityTile(
-            "Rejected Application APP-2026-008",
-            "Yesterday",
-          ),
-
-          _activityTile(
-            "Updated User Permissions",
-            "2 Days Ago",
-          ),
-        ],
-      ),
+      )
     );
   }
 
   Widget _loginHistoryCard() {
     return _sectionCard(
-      "Recent Login History",
-      Column(
+      title: "Recent Login History",
+      child: Column(
         children: [
+          _loginTile("Accra, Ghana", "Chrome on Windows", "Today 08:00 AM"),
 
-          _loginTile(
-            "Accra, Ghana",
-            "Chrome on Windows",
-            "Today 08:00 AM",
-          ),
+          _loginTile("Accra, Ghana", "Chrome on Ubuntu", "Yesterday"),
 
-          _loginTile(
-            "Accra, Ghana",
-            "Chrome on Ubuntu",
-            "Yesterday",
-          ),
-
-          _loginTile(
-            "Accra, Ghana",
-            "Microsoft Edge",
-            "3 Days Ago",
-          ),
+          _loginTile("Accra, Ghana", "Microsoft Edge", "3 Days Ago"),
         ],
       ),
     );
@@ -244,10 +253,9 @@ class AdminUserProfilePage extends StatelessWidget {
 
   Widget _securityCard() {
     return _sectionCard(
-      "Security",
-      Row(
+      title: "Security",
+      child: Row(
         children: [
-
           Expanded(
             child: ListTile(
               leading: const Icon(Icons.lock_outline),
@@ -265,10 +273,7 @@ class AdminUserProfilePage extends StatelessWidget {
               leading: const Icon(Icons.security_outlined),
               title: const Text("Two Factor Authentication"),
               subtitle: const Text("Enabled"),
-              trailing: Switch(
-                value: true,
-                onChanged: (_) {},
-              ),
+              trailing: Switch(value: true, onChanged: (_) {}),
             ),
           ),
         ],
@@ -276,7 +281,7 @@ class AdminUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _sectionCard(String title, Widget child) {
+  Widget _sectionCard({required String title, required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -286,14 +291,7 @@ class AdminUserProfilePage extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          HeaderText(title),
-
-          const SizedBox(height: 18),
-
-          child,
-        ],
+        children: [HeaderText(title), const SizedBox(height: 18), child],
       ),
     );
   }
@@ -309,18 +307,11 @@ class AdminUserProfilePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          CustomText(
-            title,
-            textColor: Colors.grey,
-          ),
+          CustomText(title, textColor: Colors.grey),
 
           const SizedBox(height: 4),
 
-          CustomText(
-            value,
-            fontWeight: FontWeight.w600,
-          ),
+          CustomText(value, fontWeight: FontWeight.w600),
         ],
       ),
     );
@@ -331,40 +322,26 @@ class AdminUserProfilePage extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-
-          const Icon(
-            Icons.check_circle,
-            color: Colors.green,
-            size: 18,
-          ),
+          const Icon(Icons.check_circle, color: Colors.green, size: 18),
 
           const SizedBox(width: 10),
 
-          Expanded(
-            child: CustomText(permission),
-          ),
+          Expanded(child: CustomText(permission)),
         ],
       ),
     );
   }
 
-  Widget _activityTile(String title, String time) {
+  Widget _activityTile({required String title, required String time}) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: const Icon(Icons.history),
       title: CustomText(title),
-      subtitle: CustomText(
-        time,
-        textColor: Colors.grey,
-      ),
+      subtitle: CustomText(time, textColor: Colors.grey),
     );
   }
 
-  Widget _loginTile(
-      String location,
-      String device,
-      String time,
-      ) {
+  Widget _loginTile(String location, String device, String time) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: const Icon(Icons.login),
@@ -373,12 +350,7 @@ class AdminUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _statCard(
-      String title,
-      String value,
-      IconData icon,
-      Color color,
-      ) {
+  Widget _statCard(String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -387,11 +359,7 @@ class AdminUserProfilePage extends StatelessWidget {
       ),
       child: Column(
         children: [
-
-          Icon(
-            icon,
-            color: color,
-          ),
+          Icon(icon, color: color),
 
           const SizedBox(height: 10),
 
@@ -404,10 +372,7 @@ class AdminUserProfilePage extends StatelessWidget {
 
           const SizedBox(height: 4),
 
-          CustomText(
-            title,
-            textColor: Colors.grey,
-          ),
+          CustomText(title, textColor: Colors.grey),
         ],
       ),
     );

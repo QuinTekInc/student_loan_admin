@@ -42,7 +42,9 @@ class _LoanApplicationReviewState extends State<LoanApplicationReview> {
         spacing: 24,
         children: [
 
-          HeaderText("Loan Application Review"),
+          FragementHeader(
+            title: 'Loan Application Information',
+          ),
           
           Expanded( 
             child: BlocBuilder<ReviewCubit, ReviewState>( 

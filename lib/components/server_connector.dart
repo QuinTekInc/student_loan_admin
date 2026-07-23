@@ -125,12 +125,17 @@ class WebSocketService {
   final String endpoint;
   final bool Function(dynamic data) streamValidator;
 
+  bool isConnected = false;
+
   WebSocketService({required this.endpoint, required this.streamValidator});
 
   String _concatUrl(String endpoint) => 'ws://127.0.0.1:8000/$endpoint';
 
   void connect() async {
+    
     String token = (await SecureStorageServices.getAuthToken()) ?? '';
+
+    print('[TOKEN FOR WEBSOCKET] - $token');
 
     final uri = Uri.parse(_concatUrl(endpoint));
 
@@ -139,6 +144,8 @@ class WebSocketService {
         uri,
         headers: {'Authorization': 'Token ${token.trim()}'},
       );
+
+      isConnected = true;
 
       _socket.messages.listen(
         (message) {
@@ -152,14 +159,17 @@ class WebSocketService {
         onError: (error) async {
           _streamController.addError(error);
           await _streamController.close();
+          isConnected = false;
         },
 
         onDone: () {
           print('[WEBSOCKET CLASS] -> Connection is done');
           _socket.close();
+          isConnected = false;
         },
       );
     } catch (ex) {
+      isConnected = false;
       throw Exception(ex.toString());
     }
   }

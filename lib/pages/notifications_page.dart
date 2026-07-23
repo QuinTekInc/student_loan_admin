@@ -76,6 +76,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
         Row(
           spacing: 12,
           children: [
+
+            //the button that shows all the notifications
             ElevatedButton(
               onPressed: () => setState(() {
                 readSelected = false;
@@ -95,7 +97,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
               ),
             ),
 
-            //
+
+            //read button
             ElevatedButton.icon(
               onPressed: () => setState(() {
                 readSelected = true;
@@ -107,12 +110,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 iconColor: readSelected ? Colors.white : Colors.black87,
               ),
               label: CustomText(
-                'Unread',
+                'Read',
                 textColor: readSelected ? Colors.white : Colors.black87,
               ),
               icon: Icon(Icons.check),
             ),
 
+
+            //the unread button
             ElevatedButton(
               onPressed: () => setState(() {
                 readSelected = false;
@@ -124,30 +129,27 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 iconColor: unreadSelected ? Colors.white : Colors.black87,
               ),
               child: CustomText(
-                'Read',
+                'Unread',
                 textColor: unreadSelected ? Colors.white : Colors.black87,
               ),
             ),
 
+            Spacer(),
 
-            Spacer(), 
+            if (unreadSelected)
+              ElevatedButton.icon(
+                onPressed: () {
+                  //TODO: function to mark all the user's unread notification as read.
+                  context.read<NotificationCubit>().markAllAsRead();
+                },
 
-
-            if(unreadSelected) ElevatedButton.icon(  
-              onPressed: (){
-                //TODO: function to mark all the user's unread notification as read.
-              },
-
-              style: ElevatedButton.styleFrom(  
-                backgroundColor: Colors.blue.shade400,
-                iconColor: Colors.white
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade400,
+                  iconColor: Colors.white,
+                ),
+                icon: Icon(Icons.check),
+                label: CustomText('Mark all as read', textColor: Colors.white),
               ),
-              icon: Icon(Icons.check),
-              label: CustomText(
-                'Mark all as read', 
-                textColor: Colors.white,
-              ),
-            )
           ],
         ),
 
@@ -232,11 +234,11 @@ class NotificationRow extends StatelessWidget {
           CustomText(
             formatTime(notification.createdAt),
             fontWeight: notification.isRead
-                ? FontWeight.w600
-                : FontWeight.normal,
+                ? FontWeight.normal
+                : FontWeight.w600,
             textColor: notification.isRead
                 ? notificationTypeColor
-                : Colors.grey.shade50,
+                : Colors.grey.shade500,
           ),
 
           CustomText(
@@ -247,19 +249,22 @@ class NotificationRow extends StatelessWidget {
       ),
 
       onTap: () {
-
-        //TODO: send a message to the server that a notification has been read.
+        context.read<NotificationCubit>().markAsRead(
+          notificationId: notification.id,
+        );
 
         showModalBottomSheet(
-        context: context,
-        elevation: 5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        builder: (_) => NotificationModalSheet(
-          notification: notification,
-          notificationTypeColor: notificationTypeColor,
-          notificationIcon: getIconType,
-        ),
-      );
+          context: context,
+          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          builder: (_) => NotificationModalSheet(
+            notification: notification,
+            notificationTypeColor: notificationTypeColor,
+            notificationIcon: getIconType,
+          ),
+        );
       },
     );
   }
@@ -342,44 +347,30 @@ class NotificationModalSheet extends StatelessWidget {
             ],
           ),
 
-
-
-          Row(  
+          Row(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 12,
             children: [
-
               Expanded(
-                child: _buildField( 
+                child: _buildField(
                   title: 'Date',
-                  value: formatDate(notification.createdAt)
+                  value: formatDate(notification.createdAt),
                 ),
               ),
 
-
               Expanded(
                 child: _buildField(
-                  title: 'Time', 
-                  value: formatTime(notification.createdAt)
-                )
+                  title: 'Time',
+                  value: formatTime(notification.createdAt),
+                ),
               ),
-
             ],
           ),
 
+          _buildField(title: 'Title', value: notification.title),
 
-          _buildField(  
-            title: 'Title',
-            value: notification.title
-          ), 
-
-
-          _buildField(  
-            title: 'Message',
-            value: notification.message
-          ), 
-
+          _buildField(title: 'Message', value: notification.message),
         ],
       ),
     );

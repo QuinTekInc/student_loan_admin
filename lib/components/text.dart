@@ -1,12 +1,12 @@
-
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/bloc/navigation_bloc.dart';
 
 class CustomText extends StatelessWidget {
-
   final String text;
   final Color textColor;
   final double fontSize;
@@ -19,7 +19,8 @@ class CustomText extends StatelessWidget {
   final bool softwrap;
   final double? height;
 
-  const CustomText(this.text, {
+  const CustomText(
+    this.text, {
     super.key,
     this.textColor = Colors.black87,
     this.fontSize = 12,
@@ -30,7 +31,7 @@ class CustomText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.softwrap = true,
-    this.height
+    this.height,
   });
 
   @override
@@ -49,18 +50,18 @@ class CustomText extends StatelessWidget {
           fontWeight: fontWeight,
           fontStyle: fontStyle,
           fontFamily: "Poppins",
-          height: height
-        )
+          height: height,
+        ),
       ),
     );
   }
 }
 
-
-CustomText HeaderText(String text, {
+CustomText HeaderText(
+  String text, {
   double fontSize = 20,
   Color textColor = Colors.black87,
-  TextAlign textAlignment = TextAlign.left
+  TextAlign textAlignment = TextAlign.left,
 }) => CustomText(
   text,
   textColor: textColor,
@@ -70,11 +71,8 @@ CustomText HeaderText(String text, {
   padding: EdgeInsets.zero,
 );
 
-
-
 //todo: custom text field
 class CustomTextField extends StatelessWidget {
-
   final TextEditingController controller;
   final String? hintText;
   final IconData? leadingIcon;
@@ -89,6 +87,8 @@ class CustomTextField extends StatelessWidget {
   final TextAlign textAlignment;
   final TextInputType keyboardType;
   final Color? borderColor;
+  final bool readOnly;
+  final VoidCallback? onPressed;
 
   const CustomTextField({
     super.key,
@@ -105,7 +105,9 @@ class CustomTextField extends StatelessWidget {
     this.inputFormatters,
     this.textAlignment = TextAlign.left,
     this.keyboardType = TextInputType.text,
-    this.borderColor
+    this.borderColor,
+    this.readOnly = false,
+    this.onPressed,
   });
 
   @override
@@ -118,22 +120,20 @@ class CustomTextField extends StatelessWidget {
         maxLines: maxLines,
         maxLength: maxLength,
         obscureText: obscureText,
+        readOnly: readOnly,
 
         textAlign: textAlignment,
 
         inputFormatters: inputFormatters,
 
         onChanged: onChanged,
+        onTap: onPressed,
         cursorColor: Colors.green.shade800,
 
         decoration: InputDecoration(
           labelText: hintText,
-          labelStyle: TextStyle(
-            fontFamily: "Poppins"
-          ),
-          floatingLabelStyle: TextStyle(
-            color: Colors.green.shade400
-          ),
+          labelStyle: TextStyle(fontFamily: "Poppins"),
+          floatingLabelStyle: TextStyle(color: Colors.green.shade400),
           filled: true,
           fillColor: const Color(0xffF1F5F9),
           prefixIcon: Icon(leadingIcon),
@@ -151,18 +151,17 @@ class CustomTextField extends StatelessWidget {
 //todo: custom password field
 
 class CustomPasswordField extends StatefulWidget {
-
   final TextEditingController controller;
   final String? hintText;
   final bool useLabel;
-  final void Function(String?)?  onChanged;
+  final void Function(String?)? onChanged;
 
   const CustomPasswordField({
     super.key,
     required this.controller,
     this.hintText,
     this.useLabel = true,
-    this.onChanged
+    this.onChanged,
   });
 
   @override
@@ -170,7 +169,6 @@ class CustomPasswordField extends StatefulWidget {
 }
 
 class _CustomPasswordFieldState extends State<CustomPasswordField> {
-
   bool obscureText = false;
 
   @override
@@ -193,14 +191,12 @@ class _CustomPasswordFieldState extends State<CustomPasswordField> {
         cursorColor: Colors.green.shade400,
         decoration: InputDecoration(
           labelText: widget.hintText ?? "Password",
-          floatingLabelStyle: TextStyle(
-            color: Colors.green.shade400
-          ),
+          floatingLabelStyle: TextStyle(color: Colors.green.shade400),
           filled: true,
           fillColor: const Color(0xffF1F5F9),
           prefixIcon: Icon(CupertinoIcons.lock),
           suffixIcon: IconButton(
-            icon: Icon( obscureText ? Icons.visibility_off : Icons.visibility,),
+            icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility),
             onPressed: () {
               setState(() => obscureText = !obscureText);
             },
@@ -217,19 +213,21 @@ class _CustomPasswordFieldState extends State<CustomPasswordField> {
   }
 
   Widget buildTrailingIconButton() => GestureDetector(
-    onTap: (){
+    onTap: () {
       setState(() {
         obscureText = !obscureText;
       });
     },
-    child: Icon(obscureText ? CupertinoIcons.eye : CupertinoIcons.eye_slash, color: Colors.green, size: 20,)
+    child: Icon(
+      obscureText ? CupertinoIcons.eye : CupertinoIcons.eye_slash,
+      color: Colors.green,
+      size: 20,
+    ),
   );
 }
 
-
 //todo: build a text area.
-class CustomTextArea extends StatelessWidget{
-
+class CustomTextArea extends StatelessWidget {
   final TextEditingController controller;
   final String? hintText;
   final int? maxLength;
@@ -238,13 +236,11 @@ class CustomTextArea extends StatelessWidget{
     super.key,
     required this.controller,
     this.hintText,
-    this.maxLength
+    this.maxLength,
   });
-
 
   @override
   Widget build(BuildContext context) {
-
     return CustomTextField(
       controller: controller,
       maxLines: 4,
@@ -253,13 +249,9 @@ class CustomTextArea extends StatelessWidget{
       useLabel: false,
     );
   }
-
 }
 
-
-
 class OtpTextField extends StatefulWidget {
-
   final OtpTextEditingController controller;
 
   const OtpTextField({super.key, required this.controller});
@@ -269,8 +261,10 @@ class OtpTextField extends StatefulWidget {
 }
 
 class _OtpTextFieldState extends State<OtpTextField> {
-
-  final List<TextEditingController> textControllers = List.generate(6, (index) => TextEditingController());
+  final List<TextEditingController> textControllers = List.generate(
+    6,
+    (index) => TextEditingController(),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -281,35 +275,31 @@ class _OtpTextFieldState extends State<OtpTextField> {
         crossAxisAlignment: CrossAxisAlignment.center,
 
         children: List<Widget>.generate(6, (index) {
-
           return Expanded(
+            child: CustomTextField(
+              controller: textControllers[index],
+              textAlignment: TextAlign.center,
+              keyboardType: TextInputType.number,
 
-              child: CustomTextField(
-                controller: textControllers[index],
-                textAlignment: TextAlign.center,
-                keyboardType: TextInputType.number,
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(1),
+                FilteringTextInputFormatter.digitsOnly,
+              ],
 
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(1),
-                  FilteringTextInputFormatter.digitsOnly
-                ],
+              onChanged: (newValue) {
+                if (textControllers[index].text.length == 1 && index != 5)
+                  FocusScope.of(context).nextFocus();
 
-                onChanged: (newValue){
+                String otpText = '';
 
-                  if(textControllers[index].text.length == 1 && index != 5) FocusScope.of(context).nextFocus();
+                //todo: collect the text from every text field in the Otp Text field controllers.
+                for (TextEditingController textController in textControllers) {
+                  otpText += textController.text;
+                }
 
-                  String otpText = '';
-
-                  //todo: collect the text from every text field in the Otp Text field controllers.
-                  for(TextEditingController textController in textControllers){
-                    otpText += textController.text;
-                  }
-
-
-                  widget.controller.text = otpText;
-
-                },
-              )
+                widget.controller.text = otpText;
+              },
+            ),
           );
         }),
       ),
@@ -317,46 +307,79 @@ class _OtpTextFieldState extends State<OtpTextField> {
   }
 }
 
-class OtpTextEditingController{
-
+class OtpTextEditingController {
   String text;
 
-  OtpTextEditingController({this.text=''});
+  OtpTextEditingController({this.text = ''});
 
-  void clear(){
+  void clear() {
     text = '';
   }
-
 }
 
+class FragementHeader extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final List<Widget> actions;
 
+  const FragementHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.actions = const [],
+  });
 
-CustomText answerColorText(String answer){
+  @override
+  Widget build(BuildContext context) {
+    final headerText = HeaderText(title, fontSize: 24);
 
-  Color answerTextColor = Colors.green.shade400;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      spacing: 12,
+      children: [
+        if (context.read<NavigationCubit>().navigatorStack.length > 1)
+          IconButton(
+            onPressed: context.read<NavigationCubit>().pop,
+            style: IconButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: Icon(
+              Icons.arrow_back,
+              size: 30,
+              color: Colors.green.shade700,
+            ),
+          ),
 
-  String alc = answer.toLowerCase();
+        if (subtitle == null) headerText,
 
-  if(alc =="average" || alc == "sometimes" || alc == "rarely"){
-    answerTextColor = Colors.yellowAccent;
-  }else if(alc == "poor" || alc == "no" || alc == "never"){
-    answerTextColor = Colors.redAccent;
-  }else if(alc == "no answer"){
-    answerTextColor = Colors.black54;
+        if (subtitle != null)
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 3,
+            children: [
+              headerText,
+
+              CustomText(
+                subtitle!,
+                textColor: Colors.black54,
+                padding: EdgeInsets.zero,
+              ),
+            ],
+          ),
+
+        if (actions.isNotEmpty) Spacer(),
+
+        if (actions.isNotEmpty) ...actions,
+      ],
+    );
   }
-
-
-  return CustomText(answer, textColor: answerTextColor, fontWeight: FontWeight.w700, fontSize: 13,);
-
 }
-
-
-
-
-
 
 class TableContainer extends StatelessWidget {
-
   final EdgeInsets padding;
   final EdgeInsets margin;
   final double? height;
@@ -381,8 +404,8 @@ class TableContainer extends StatelessWidget {
       height: height,
 
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.white
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
       ),
 
       child: child,
@@ -390,11 +413,7 @@ class TableContainer extends StatelessWidget {
   }
 }
 
-
-
-
 class TableHeaderContainer extends StatelessWidget {
-
   final List<Widget> headerChildren;
 
   final MainAxisAlignment mainAxisAlignment;
@@ -406,7 +425,7 @@ class TableHeaderContainer extends StatelessWidget {
     this.mainAxisAlignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
     this.spacing = 0,
-    this.headerChildren = const[]
+    this.headerChildren = const [],
   });
 
   @override
@@ -416,8 +435,8 @@ class TableHeaderContainer extends StatelessWidget {
       width: double.infinity,
 
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.shade200
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade200,
       ),
 
       child: Row(
@@ -429,6 +448,3 @@ class TableHeaderContainer extends StatelessWidget {
     );
   }
 }
-
-
-

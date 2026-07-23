@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loan_admin/bloc/applications_bloc.dart';
+import 'package:loan_admin/bloc/dashboard_bloc.dart';
 import 'package:loan_admin/bloc/loans_bloc.dart';
+import 'package:loan_admin/components/alert.dart';
 
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/notification_bloc.dart';
@@ -39,12 +41,12 @@ class _LoginPageState extends State<LoginPage> {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthError) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text("Login Error"),
-              content: CustomText(state.message),
-            ),
+          showAlertDialog(
+            context: context, 
+            alertType: AlertType.error,
+            icon: Icons.error,
+            title: 'Login Error',
+            contentText: state.message
           );
           return;
         }
@@ -57,8 +59,15 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(
               builder: (_) => MultiBlocProvider(
                 providers: [
+
                   BlocProvider(
-                    create: (_) => NotificationCubit()..listenForNotifications()
+                    create: (_) => NotificationCubit()..
+                                      listenForNotifications(),
+                  ),
+
+                  BlocProvider(  
+                    create: (_) => DashboardCubit()..
+                                        fetchDashboardData(),
                   ),
 
                   BlocProvider(create: (_) => LoansCubit()),

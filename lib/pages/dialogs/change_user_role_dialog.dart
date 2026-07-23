@@ -1,23 +1,19 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:loan_admin/components/text.dart';
+import 'package:loan_admin/models/models.dart';
 
 class ChangeUserRoleDialog extends StatefulWidget {
+
+  final User user;
+
   const ChangeUserRoleDialog({
     super.key,
-    required this.userName,
-    required this.email,
-    required this.currentRole,
+    required this.user,
   });
 
-  final String userName;
-  final String email;
-  final String currentRole;
 
   @override
-  State<ChangeUserRoleDialog> createState() =>
-      _ChangeUserRoleDialogState();
+  State<ChangeUserRoleDialog> createState() => _ChangeUserRoleDialogState();
 }
 
 class _ChangeUserRoleDialogState extends State<ChangeUserRoleDialog> {
@@ -25,21 +21,12 @@ class _ChangeUserRoleDialogState extends State<ChangeUserRoleDialog> {
 
   bool notifyUser = true;
 
-  final reasonController =
-  TextEditingController();
-
   final roles = ['admin', "superuser"];
 
   @override
   void initState() {
     super.initState();
-    selectedRole = widget.currentRole;
-  }
-
-  @override
-  void dispose() {
-    reasonController.dispose();
-    super.dispose();
+    selectedRole = widget.user.role;
   }
 
   Color get roleColor {
@@ -57,7 +44,6 @@ class _ChangeUserRoleDialogState extends State<ChangeUserRoleDialog> {
 
   IconData get roleIcon {
     switch (selectedRole) {
-
       case "admin":
         return Icons.fact_check;
 
@@ -90,195 +76,127 @@ class _ChangeUserRoleDialogState extends State<ChangeUserRoleDialog> {
       child: Container(
         width: 760,
 
-        padding:
-        const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
 
         decoration: BoxDecoration(
           color: Colors.white,
 
-          borderRadius: BorderRadius.circular(24,),
+          borderRadius: BorderRadius.circular(24),
         ),
 
         child: Column(
-          mainAxisSize:
-          MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
 
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
             Row(
               children: [
-
                 Container(
                   height: 58,
                   width: 58,
 
-                  decoration:
-                  BoxDecoration(
-                    color: roleColor.withOpacity(.12,),
+                  decoration: BoxDecoration(
+                    color: roleColor.withOpacity(.12),
 
                     shape: BoxShape.circle,
                   ),
 
-                  child: Icon(
-                    roleIcon,
-                    color: roleColor,
-                  ),
+                  child: Icon(roleIcon, color: roleColor),
                 ),
 
-                const SizedBox(
-                  width: 16,
-                ),
+                const SizedBox(width: 16),
 
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
 
                     children: [
-
-                      HeaderText(
-                        "Change User Role",
-                      ),
+                      HeaderText("Change User Role"),
 
                       const SizedBox(height: 4),
 
-                      CustomText(
-                        widget.userName,
-                      ),
+                      CustomText(widget.user.username),
 
-                      CustomText(
-                        widget.email,
-                        textColor: Colors.grey,
-                      ),
+                      CustomText(widget.user.email, textColor: Colors.grey),
                     ],
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(
-              height: 28,
-            ),
+            const SizedBox(height: 28),
 
-            Row(
-              children: [
+            _readonly("Current Role", widget.user.role),
 
-                Expanded(
-                  child: _readonly(
-                    "Current Role",
-                    widget.currentRole,
-                  ),
-                ),
+            const SizedBox(height: 12),
 
-                const SizedBox(
-                  width: 16,
-                ),
-
-                Expanded(
-                  child:
-                  DropdownButtonFormField<String>(
-                    value: selectedRole,
-
-                    decoration:
-                    InputDecoration(
-                      labelText:
-                      "New Role",
-
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14,),
-                      ),
-                    ),
-
-                    items: roles.map(
-                      (role) => DropdownMenuItem(
-                        value:role,
-                        child: Text(role,),
-                      ),
-                    ).toList(),
-
-                    onChanged:(value,) => setState(() => selectedRole = value!,),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(
-              height: 18,
-            ),
-
-            TextField(
-              controller: reasonController,
-
-              maxLines: 4,
+            DropdownButtonFormField<String>(
+              value: selectedRole,
 
               decoration: InputDecoration(
-                labelText:
-                "Reason for Role Change (Optional)",
+                labelText: "New Role",
+                labelStyle: TextStyle(
+                  fontFamily: 'Poppins',
+                  color: Colors.green.shade400,
+                ),
 
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14,),
+                  borderRadius: BorderRadius.circular(13),
+                  borderSide: BorderSide(color: Colors.green.shade400),
+                ),
+
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.green.shade400),
                 ),
               ),
+
+              items: roles
+                  .map(
+                    (role) => DropdownMenuItem(value: role, child: Text(role)),
+                  )
+                  .toList(),
+
+              onChanged: (value) => setState(() => selectedRole = value!),
             ),
 
-            const SizedBox(
-              height: 18,
-            ),
+            // SwitchListTile(
+            //   value: notifyUser,
 
-            SwitchListTile(
-              value: notifyUser,
+            //   activeColor: Colors.green,
 
-              activeColor: Colors.green,
+            //   title: CustomText(
+            //     "Notify User",
+            //   ),
 
-              title: const Text(
-                "Notify User",
-              ),
+            //   subtitle: CustomText(
+            //     "Send role change notification",
+            //   ),
 
-              subtitle: const Text(
-                "Send role change notification",
-              ),
-
-              onChanged: (value,) => setState(() => notifyUser =value,),
-            ),
-
-            const SizedBox(
-              height: 20,
-            ),
+            //   onChanged: (value,) => setState(() => notifyUser =value,),
+            // ),
+            const SizedBox(height: 20),
 
             Container(
-              width:
-              double.infinity,
+              width: double.infinity,
 
-              padding:
-              const EdgeInsets
-                  .all(
-                18,
-              ),
+              padding: const EdgeInsets.all(18),
 
-              decoration:
-              BoxDecoration(
-                color: roleColor.withOpacity(.08,),
-                borderRadius: BorderRadius.circular(18,),
+              decoration: BoxDecoration(
+                color: roleColor.withOpacity(.08),
+                borderRadius: BorderRadius.circular(18),
               ),
 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-
                   Row(
                     children: [
+                      Icon(roleIcon, color: roleColor),
 
-                      Icon(
-                        roleIcon,
-                        color: roleColor,
-                      ),
-
-                      const SizedBox(
-                        width: 8,
-                      ),
+                      const SizedBox(width: 8),
 
                       CustomText(
                         selectedRole,
@@ -288,29 +206,21 @@ class _ChangeUserRoleDialogState extends State<ChangeUserRoleDialog> {
                     ],
                   ),
 
-                  const SizedBox(
-                    height: 12,
-                  ),
+                  const SizedBox(height: 12),
 
-                  CustomText(
-                    permissionPreview,
-                    textColor: Colors.grey,
-                  ),
+                  CustomText(permissionPreview, textColor: Colors.grey),
                 ],
               ),
             ),
 
-            const SizedBox(
-              height: 24,
-            ),
+            const SizedBox(height: 24),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-
                 OutlinedButton(
-                  onPressed: () => Navigator.pop(context,),
-                  child: CustomText('Cancel')
+                  onPressed: () => Navigator.pop(context),
+                  child: CustomText('Cancel'),
                 ),
 
                 const SizedBox(width: 12),
@@ -322,9 +232,9 @@ class _ChangeUserRoleDialogState extends State<ChangeUserRoleDialog> {
 
                   onPressed: handleUpdate,
 
-                  icon: const Icon(Icons.save,),
+                  icon: const Icon(Icons.save, color: Colors.white),
 
-                  label: CustomText('Update Role')
+                  label: CustomText('Update Role', textColor: Colors.white),
                 ),
               ],
             ),
@@ -334,25 +244,16 @@ class _ChangeUserRoleDialogState extends State<ChangeUserRoleDialog> {
     );
   }
 
-  Widget _readonly(
-    String label,
-    String value,
-  ) {
+  Widget _readonly(String label, String value) {
     return TextField(
       enabled: false,
       decoration: InputDecoration(
         labelText: label,
         hintText: value,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14,),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
 
-
-
-  void handleUpdate() async {
-
-  }
+  void handleUpdate() async {}
 }

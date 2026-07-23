@@ -1,21 +1,45 @@
-
-
 import 'package:flutter/material.dart';
+import 'package:loan_admin/bloc/notification_bloc.dart';
 import 'package:loan_admin/components/text.dart';
+import 'package:loan_admin/bloc/repo.dart';
 
 class NotifyUserDialog extends StatefulWidget {
-  const NotifyUserDialog({
+  final String? studentId;
+  final String? fullName;
+  final String? username;
+
+  final bool isStudent;
+
+  bool isGlobal; //should be sent to all users except admins.
+  bool isAdmins; //should be send to all admin
+
+  NotifyUserDialog({
     super.key,
-    required this.userName,
-    required this.userEmail,
+    this.studentId,
+    this.fullName,
+    this.username,
+    this.isStudent = false,
+    this.isGlobal = false,
+    this.isAdmins = false,
   });
 
-  final String userName;
-  final String userEmail;
+  factory NotifyUserDialog.student({
+    required String studentId,
+    required String fullName,
+  }) {
+    return NotifyUserDialog(
+      studentId: studentId,
+      fullName: fullName,
+      isStudent: true,
+    );
+  }
+
+  factory NotifyUserDialog.user({required String username}) {
+    return NotifyUserDialog(username: username);
+  }
 
   @override
-  State<NotifyUserDialog> createState() =>
-      _NotifyUserDialogState();
+  State<NotifyUserDialog> createState() => _NotifyUserDialogState();
 }
 
 class _NotifyUserDialogState extends State<NotifyUserDialog> {
@@ -23,16 +47,9 @@ class _NotifyUserDialogState extends State<NotifyUserDialog> {
 
   final messageController = TextEditingController();
 
-  bool sendImmediately = true;
+  final notificationTypes = ["Info", "Success", "Warning", "Error"];
 
-  String notificationType = "Info";
-
-  final notificationTypes = [
-    "Info",
-    "Success",
-    "Warning",
-    "Error",
-  ];
+  String selectedValue = '';
 
   @override
   void dispose() {
@@ -42,15 +59,15 @@ class _NotifyUserDialogState extends State<NotifyUserDialog> {
   }
 
   Color get typeColor {
-    switch (notificationType) {
-      case "Success":
+    switch (selectedValue) {
+      case "success":
         return Colors.green;
 
-      case "Warning":
+      case "warning":
         return Colors.orange;
 
-      case "Error":
-        return Colors.red;
+      case "reminder":
+        return Colors.deepPurple;
 
       default:
         return Colors.blue;
@@ -58,15 +75,15 @@ class _NotifyUserDialogState extends State<NotifyUserDialog> {
   }
 
   IconData get typeIcon {
-    switch (notificationType) {
-      case "Success":
+    switch (selectedValue) {
+      case "success":
         return Icons.check_circle;
 
-      case "Warning":
+      case "warning":
         return Icons.warning;
 
-      case "Error":
-        return Icons.error;
+      case "reminder":
+        return Icons.notifications;
 
       default:
         return Icons.info;
@@ -75,373 +92,173 @@ class _NotifyUserDialogState extends State<NotifyUserDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final headerIconColor = selectedValue.isEmpty ? Colors.green : typeColor;
+
+    final headerIcon = selectedValue.isEmpty ? Icons.send : typeIcon;
+
     return Dialog(
-      backgroundColor: Colors.transparent,
-
       child: Container(
-        width: 720,
-
-        padding:
-        const EdgeInsets.all(24),
-
+        width: MediaQuery.of(context).size.width * 0.5,
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-
-          borderRadius:
-          BorderRadius.circular(
-            24,
-          ),
+          borderRadius: BorderRadius.circular(12),
         ),
 
         child: Column(
-          mainAxisSize:
-          MainAxisSize.min,
-
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
-
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
           children: [
-
+            //header
             Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 8,
               children: [
-
-                Container(
-                  height: 58,
-                  width: 58,
-
-                  decoration: BoxDecoration(
-                    color: typeColor.withOpacity(.12,),
-                    shape: BoxShape.circle,
-                  ),
-
-                  child: Icon(
-                    typeIcon,
-                    color: typeColor,
-                  ),
+                CircleAvatar(
+                  backgroundColor: headerIconColor.withOpacity(.15),
+                  radius: 30,
+                  child: Icon(headerIcon, color: headerIconColor, size: 30),
                 ),
-
-                const SizedBox(width: 16),
 
                 Expanded(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
-
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-
-                      HeaderText(
-                        "Notify User",
-                      ),
-
-                      const SizedBox(height: 4),
-
-                      CustomText(
-                        widget.userName,
-                        textColor: Colors.grey,
-                      ),
-
-                      CustomText(
-                        widget.userEmail,
-                        textColor: Colors.grey,
-                      ),
+                      HeaderText('Send Notification'),
+                      CustomText('Send a notification to Users'),
                     ],
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(
-              height: 24,
+            CustomText(
+              'Notification Type',
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
             ),
 
-            const CustomText(
-              "Notification Type",
-              fontWeight:
-              FontWeight.bold,
-            ),
+            //the various notification_types
+            _buildTypesRow(),
 
-            const SizedBox(
-              height: 10,
-            ),
-
-            DropdownButtonFormField<
-                String>(
-              value:
-              notificationType,
-
-              decoration:
-              InputDecoration(
-                border:
-                OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
-                      .circular(
-                    14,
-                  ),
+            if (widget.isStudent) ...[
+              CustomText(
+                'Student ID.',
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+              IgnorePointer(
+                ignoring: true,
+                child: CustomTextField(
+                  controller: TextEditingController(text: widget.studentId),
+                  hintText: 'Enter notification title here',
                 ),
               ),
 
-              items:
-              notificationTypes
-                  .map(
-                    (e) =>
-                    DropdownMenuItem(
-                      value: e,
-
-                      child:
-                      Text(
-                        e,
-                      ),
-                    ),
-              )
-                  .toList(),
-
-              onChanged:
-                  (value) {
-                setState(() {
-                  notificationType =
-                  value!;
-                });
-              },
-            ),
-
-            const SizedBox(
-              height: 18,
-            ),
-
-            TextField(
-              controller:
-              titleController,
-
-              decoration:
-              InputDecoration(
-                labelText:
-                "Title",
-
-                border:
-                OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
-                      .circular(
-                    14,
-                  ),
+              CustomText(
+                'Student Full Name',
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+              IgnorePointer(
+                ignoring: true,
+                child: CustomTextField(
+                  controller: TextEditingController(text: widget.fullName),
+                  hintText: 'Enter notification title here',
                 ),
               ),
+            ],
 
-              onChanged:
-                  (_) =>
-                  setState(
-                        () {},
-                  ),
-            ),
+            if (widget.username != null) ...[
+              CustomText('User', fontWeight: FontWeight.w700, fontSize: 16),
 
-            const SizedBox(
-              height: 18,
-            ),
-
-            TextField(
-              controller:
-              messageController,
-
-              maxLines: 5,
-
-              decoration:
-              InputDecoration(
-                labelText:
-                "Message",
-
-                border:
-                OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
-                      .circular(
-                    14,
-                  ),
+              IgnorePointer(
+                ignoring: true,
+                child: CustomTextField(
+                  controller: TextEditingController(text: widget.username),
+                  hintText: 'Enter notification title here',
                 ),
               ),
+            ],
 
-              onChanged:
-                  (_) =>
-                  setState(
-                        () {},
-                  ),
-            ),
-
-            const SizedBox(
-              height: 18,
-            ),
-
-            SwitchListTile(
-              value:
-              sendImmediately,
-
-              activeColor:
-              Colors.green,
-
-              title:
-              const Text(
-                "Send Immediately",
+            if (widget.isAdmins) ...[
+              CustomText(
+                'Hello World',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
+              _buildDecorativeLabel('Send to all Admins'),
+            ],
 
-              subtitle:
-              const Text(
-                "Send instantly after confirmation",
+            if (widget.isGlobal) ...[
+              CustomText(
+                'Hello World',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
+              _buildDecorativeLabel('Send to all Users'),
+            ],
 
-              onChanged:
-                  (v) {
-                setState(() {
-                  sendImmediately =
-                      v;
-                });
-              },
+            CustomText('Title', fontWeight: FontWeight.w700, fontSize: 16),
+
+            CustomTextField(
+              controller: titleController,
+              hintText: 'Enter notification title here',
             ),
 
-            const SizedBox(
-              height: 20,
+            CustomText('Message', fontWeight: FontWeight.w700, fontSize: 16),
+
+            CustomTextField(
+              controller: messageController,
+              hintText: 'Enter notification title here',
+              maxLines: 4,
+              maxLength: 1000,
             ),
 
-            Container(
-              width:
-              double.infinity,
-
-              padding:
-              const EdgeInsets
-                  .all(
-                18,
-              ),
-
-              decoration: BoxDecoration(
-                color:
-                typeColor
-                    .withOpacity(
-                  .08,
-                ),
-
-                borderRadius:
-                BorderRadius
-                    .circular(
-                  18,
-                ),
-              ),
-
-              child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment
-                    .start,
-
-                children: [
-
-                  Row(
-                    children: [
-
-                      Icon(
-                        typeIcon,
-                        color:
-                        typeColor,
-                      ),
-
-                      const SizedBox(
-                        width: 8,
-                      ),
-
-                      CustomText(
-                        notificationType,
-
-                        fontWeight:
-                        FontWeight
-                            .bold,
-
-                        textColor:
-                        typeColor,
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(
-                    height: 14,
-                  ),
-
-                  CustomText(
-                    titleController
-                        .text
-                        .isEmpty
-                        ? "Notification title"
-                        : titleController
-                        .text,
-
-                    fontWeight:
-                    FontWeight
-                        .w600,
-                  ),
-
-                  const SizedBox(
-                    height: 8,
-                  ),
-
-                  CustomText(
-                    messageController
-                        .text
-                        .isEmpty
-                        ? "Notification message"
-                        : messageController
-                        .text,
-
-                    textColor:
-                    Colors.grey,
-                  ),
-                ],
-              ),
+            CustomText(
+              'Preview',
+              textColor: Colors.green.shade500,
+              fontWeight: FontWeight.w600,
             ),
 
-            const SizedBox(
-              height: 24,
-            ),
+            //build the actual preview of sending the notification
+            Divider(color: Colors.grey.shade400),
 
             Row(
-              mainAxisAlignment:
-              MainAxisAlignment
-                  .end,
-
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 12,
               children: [
-
-                OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(
-                      context,
-                    );
-                  },
-
-                  child:
-                  const Text(
-                    "Cancel",
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey.shade200,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(width: 1.5, color: Colors.grey.shade400),
+                    ),
                   ),
+
+                  child: CustomText('Cancel', textColor: Colors.grey.shade600),
                 ),
 
-                const SizedBox(
-                    width: 12),
-
-                ElevatedButton
-                    .icon(
-                  style:
-                  ElevatedButton
-                      .styleFrom(
-                    backgroundColor:
-                    typeColor,
+                ElevatedButton.icon(
+                  onPressed: handleSendNotification,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: typeColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-
-                  onPressed:
-                      () {
-                    // submit
-                  },
-
-                  icon:
-                  const Icon(
-                    Icons.send,
-                  ),
-
-                  label:
-                  const Text(
-                    "Send",
+                  icon: Icon(Icons.send_outlined, color: Colors.white),
+                  label: CustomText(
+                    'Send Notification',
+                    textColor: Colors.white,
                   ),
                 ),
               ],
@@ -450,5 +267,188 @@ class _NotifyUserDialogState extends State<NotifyUserDialog> {
         ),
       ),
     );
+  }
+
+  Widget _buildTypesRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      spacing: 12,
+      children: [
+        Expanded(
+          child: _buildTypeButton(
+            value: 'warning',
+            title: 'Warning',
+            detail: 'Alert users of a potential issues',
+            icon: Icons.warning_outlined,
+            iconColor: Colors.amber,
+          ),
+        ),
+
+        Expanded(
+          child: _buildTypeButton(
+            value: 'reminder',
+            title: 'Reminder',
+            detail: 'Remind users of an upcoming action',
+            icon: Icons.notifications_outlined,
+            iconColor: Colors.deepPurple,
+          ),
+        ),
+
+        Expanded(
+          child: _buildTypeButton(
+            value: 'info',
+            title: 'Info',
+            detail: 'Share a general information',
+            icon: Icons.info_outline_rounded,
+            iconColor: Colors.blue.shade700,
+          ),
+        ),
+
+        Expanded(
+          child: _buildTypeButton(
+            value: 'success',
+            title: 'Success',
+            detail: 'Notify users of a sucessful action',
+            icon: Icons.check_outlined,
+            iconColor: Colors.green.shade700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTypeButton({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String detail,
+    required String value,
+  }) {
+    final bool isSelected = (value == selectedValue);
+
+    return GestureDetector(
+      onTap: () => setState(() => selectedValue = value),
+      child: Stack(
+        children: [
+          Container(
+            height: 110,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: isSelected
+                    ? Colors.green.shade700
+                    : Colors.grey.shade200,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 12,
+              children: [
+                CircleAvatar(
+                  backgroundColor: iconColor.withOpacity(.15),
+                  radius: 30,
+                  child: Icon(icon, color: iconColor, size: 30),
+                ),
+
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 3,
+                    children: [
+                      CustomText(
+                        title,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                      ),
+
+                      CustomText(
+                        detail,
+                        textColor: Colors.grey.shade500,
+                        softwrap: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (isSelected)
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8, right: 8),
+                child: Icon(
+                  Icons.check_circle,
+                  color: Colors.green.shade700,
+                  size: 30,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDecorativeLabel(String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      width: double.infinity,
+      alignment: Alignment.centerLeft,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade400,
+        borderRadius: BorderRadius.circular(12),
+      ),
+
+      child: CustomText(value, maxLines: 1),
+    );
+  }
+
+  void handleSendNotification() async {
+    Map<String, dynamic> notificationBody = {
+      'notification_type': selectedValue,
+      'title': titleController.text.trim(),
+      'message': messageController.text.trim(),
+    };
+
+    if (widget.isStudent) {
+      notificationBody['student_id'] = widget.studentId;
+    }
+
+    if (widget.isGlobal || widget.isAdmins) {
+      notificationBody['recipient'] = widget.isGlobal ? 'global' : 'admins';
+    }
+
+    if (widget.username != null) {
+      notificationBody['username'] = widget.username;
+    }
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: CustomText('Loading'),
+        content: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            CustomText('Please wait....'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      await Repository.sendNotification(notificationBody);
+    } catch (ex) {
+      Navigator.pop(context); //close the alert dialog.
+    }
   }
 }

@@ -1,37 +1,30 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/bloc/users_bloc.dart';
 import 'package:loan_admin/components/text.dart';
 
 class CreateUserDialog extends StatefulWidget {
   const CreateUserDialog({super.key});
 
   @override
-  State<CreateUserDialog> createState() =>
-      _CreateUserDialogState();
+  State<CreateUserDialog> createState() => _CreateUserDialogState();
 }
 
-class _CreateUserDialogState
-    extends State<CreateUserDialog> {
-  final lastNameController =
-  TextEditingController();
-
-  final firstNameController =
-  TextEditingController();
-
-  final emailController =
-  TextEditingController();
+class _CreateUserDialogState extends State<CreateUserDialog> {
+  final lastNameController = TextEditingController();
+  final firstNameController = TextEditingController();
+  final usernameController = TextEditingController();
+  final emailController = TextEditingController();
 
   String selectedRole = "Admin";
 
-  final roles = [
-    "Admin",
-    "Super Admin",
-  ];
+  final roles = ["Admin", "Super Admin"];
 
   @override
   void dispose() {
     lastNameController.dispose();
     firstNameController.dispose();
+    usernameController.dispose();
     emailController.dispose();
     super.dispose();
   }
@@ -44,30 +37,21 @@ class _CreateUserDialogState
       child: Container(
         width: 720,
 
-        padding:
-        const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
 
         decoration: BoxDecoration(
           color: Colors.white,
 
-          borderRadius:
-          BorderRadius.circular(
-            24,
-          ),
+          borderRadius: BorderRadius.circular(24),
         ),
 
         child: Column(
-          mainAxisSize:
-          MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
 
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
-            HeaderText(
-              "Create New User",
-            ),
+            HeaderText("Create New User"),
 
             const SizedBox(height: 6),
 
@@ -80,52 +64,19 @@ class _CreateUserDialogState
 
             Row(
               children: [
-
                 Expanded(
-                  child: TextField(
-                    controller:
-                    firstNameController,
-
-                    decoration:
-                    InputDecoration(
-                      labelText:
-                      "First Name",
-
-                      border:
-                      OutlineInputBorder(
-                        borderRadius:
-                        BorderRadius
-                            .circular(
-                          14,
-                        ),
-                      ),
-                    ),
+                  child: CustomTextField(
+                    controller: firstNameController,
+                    hintText: 'First Name(s)',
                   ),
                 ),
 
-                const SizedBox(
-                  width: 16,
-                ),
+                const SizedBox(width: 16),
 
                 Expanded(
-                  child: TextField(
-                    controller:
-                    lastNameController,
-
-                    decoration:
-                    InputDecoration(
-                      labelText:
-                      "Last Name",
-
-                      border:
-                      OutlineInputBorder(
-                        borderRadius:
-                        BorderRadius
-                            .circular(
-                          14,
-                        ),
-                      ),
-                    ),
+                  child: CustomTextField(
+                    controller: lastNameController,
+                    hintText: 'Last Name',
                   ),
                 ),
               ],
@@ -133,67 +84,37 @@ class _CreateUserDialogState
 
             const SizedBox(height: 18),
 
-            TextField(
-              controller:
-              emailController,
-
-              decoration:
-              InputDecoration(
-                labelText:
-                "Email Address",
-
-                border:
-                OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
-                      .circular(
-                    14,
-                  ),
-                ),
-              ),
+            CustomTextField(
+              controller: usernameController,
+              hintText: 'Username',
             ),
 
             const SizedBox(height: 18),
 
-            DropdownButtonFormField<
-                String>(
-              value:
-              selectedRole,
+            CustomTextField(controller: emailController, hintText: 'Email'),
 
-              decoration:
-              InputDecoration(
+            const SizedBox(height: 18),
+
+            DropdownButtonFormField<String>(
+              value: selectedRole,
+
+              decoration: InputDecoration(
                 labelText: "Role",
 
-                border:
-                OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
-                      .circular(
-                    14,
-                  ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
 
-              items:
-              roles
+              items: roles
                   .map(
-                    (role) =>
-                    DropdownMenuItem(
-                      value:
-                      role,
-
-                      child:
-                      Text(
-                        role,
-                      ),
-                    ),
-              )
+                    (role) => DropdownMenuItem(value: role, child: Text(role)),
+                  )
                   .toList(),
 
               onChanged: (value) {
                 setState(() {
-                  selectedRole =
-                  value!;
+                  selectedRole = value!;
                 });
               },
             ),
@@ -203,19 +124,12 @@ class _CreateUserDialogState
             Container(
               width: double.infinity,
 
-              padding:
-              const EdgeInsets
-                  .all(16),
+              padding: const EdgeInsets.all(16),
 
               decoration: BoxDecoration(
-                color: Colors.green
-                    .shade50,
+                color: Colors.green.shade50,
 
-                borderRadius:
-                BorderRadius
-                    .circular(
-                  16,
-                ),
+                borderRadius: BorderRadius.circular(16),
               ),
 
               child: const CustomText(
@@ -227,48 +141,27 @@ class _CreateUserDialogState
             const SizedBox(height: 24),
 
             Row(
-              mainAxisAlignment:
-              MainAxisAlignment
-                  .end,
+              mainAxisAlignment: MainAxisAlignment.end,
 
               children: [
-
                 OutlinedButton(
                   onPressed: () {
-                    Navigator.pop(
-                      context,
-                    );
+                    Navigator.pop(context);
                   },
 
-                  child:
-                  const Text(
-                    "Cancel",
-                  ),
+                  child: const Text("Cancel"),
                 ),
 
-                const SizedBox(
-                  width: 12,
-                ),
+                const SizedBox(width: 12),
 
                 ElevatedButton.icon(
-                  style:
-                  ElevatedButton
-                      .styleFrom(
-                    backgroundColor:
-                    Colors.green,
+                  onPressed: handleCreateUser,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
                   ),
+                  icon: const Icon(Icons.person_add, color: Colors.white),
 
-                  onPressed: () {
-                    // TODO: create user API call
-                  },
-
-                  icon: const Icon(
-                    Icons.person_add,
-                  ),
-
-                  label: const Text(
-                    "Create User",
-                  ),
+                  label: CustomText('Create user', textColor: Colors.white),
                 ),
               ],
             ),
@@ -276,5 +169,72 @@ class _CreateUserDialogState
         ),
       ),
     );
+  }
+
+  void handleCreateUser() async {
+    Map<String, dynamic> userInfo = {
+      'first_name': firstNameController.text.trim(),
+      'last_name': lastNameController.text.trim(),
+      'username': usernameController.text.trim(),
+      'email': emailController.text.trim(),
+      'role': selectedRole,
+    };
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: HeaderText('Creating User'),
+        content: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8,
+          children: [CircularProgressIndicator(), CustomText('Please wait')],
+        ),
+      ),
+    );
+
+    try {
+      await context.read<UsersCubit>().createUser(userInfo);
+
+      Navigator.pop(context); //close the loading dialog.
+
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          icon: Icon(Icons.check_circle, color: Colors.green.shade700, size: 50,),
+          title: HeaderText('User Created'),
+          content: CustomText(
+            'A new admin user has be successfully added to the database.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: CustomText('OKAY', textColor: Colors.green.shade700),
+            ),
+          ],
+        ),
+      );
+
+      //todo: show sucess dialog.
+    } catch (ex, trace) {
+      debugPrintStack(stackTrace: trace);
+      Navigator.pop(context); //close the loading dialog
+
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          icon: Icon(Icons.error, color: Colors.red.shade700, size: 50,),
+          title: HeaderText('User Creation Failed'),
+          content: CustomText(ex.toString()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: CustomText('CLOSE', textColor: Colors.red.shade700),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }

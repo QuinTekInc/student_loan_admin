@@ -1,39 +1,49 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:loan_admin/components/text.dart';
+import 'package:loan_admin/models/models.dart';
 
 class RepaymentSchedulePage extends StatelessWidget {
-  final String loanId;
+  
+  final Loan loan;
 
-  const RepaymentSchedulePage({
-    super.key,
-    required this.loanId,
-  });
+  const RepaymentSchedulePage({super.key, required this.loan});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF8FAFC),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FragementHeader(title: 'Loan Repayment Schedule'),
 
-            _summaryHeader(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _summaryHeader(),
 
-            const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-            _repaymentStats(),
+                  _repaymentStats(),
 
-            const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-            _scheduleTable(),
+                  _scheduleTable(),
 
-            const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-            _quickActions(),
-          ],
-        ),
+                  _quickActions(),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -48,21 +58,16 @@ class RepaymentSchedulePage extends StatelessWidget {
       ),
       child: Row(
         children: [
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-
-                CustomText(
-                  "Loan ID",
-                  textColor: Colors.grey,
-                ),
+              children: [
+                CustomText("Loan ID", textColor: Colors.grey),
 
                 SizedBox(height: 6),
 
                 CustomText(
-                  "LN-1001",
+                  loan.loanId,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -71,10 +76,7 @@ class RepaymentSchedulePage extends StatelessWidget {
           ),
 
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.green.shade50,
               borderRadius: BorderRadius.circular(30),
@@ -94,7 +96,6 @@ class RepaymentSchedulePage extends StatelessWidget {
   Widget _repaymentStats() {
     return Row(
       children: [
-
         Expanded(child: _statCard("Total Installments", "24", Colors.blue)),
         const SizedBox(width: 12),
 
@@ -118,7 +119,6 @@ class RepaymentSchedulePage extends StatelessWidget {
       ),
       child: Column(
         children: [
-
           CustomText(
             value,
             fontSize: 22,
@@ -128,10 +128,7 @@ class RepaymentSchedulePage extends StatelessWidget {
 
           const SizedBox(height: 6),
 
-          CustomText(
-            title,
-            textColor: Colors.grey,
-          ),
+          CustomText(title, textColor: Colors.grey),
         ],
       ),
     );
@@ -148,7 +145,6 @@ class RepaymentSchedulePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           const CustomText(
             "Installment Breakdown",
             fontWeight: FontWeight.bold,
@@ -167,7 +163,6 @@ class RepaymentSchedulePage extends StatelessWidget {
               4: FlexColumnWidth(2),
             },
             children: [
-
               _rowHeader(),
 
               _row("1", "Jan 2026", "GHS 800", "Paid", Colors.green),
@@ -186,7 +181,6 @@ class RepaymentSchedulePage extends StatelessWidget {
     return TableRow(
       decoration: BoxDecoration(color: Colors.grey.shade100),
       children: const [
-
         Padding(
           padding: EdgeInsets.all(10),
           child: CustomText("Month #", fontWeight: FontWeight.bold),
@@ -216,29 +210,19 @@ class RepaymentSchedulePage extends StatelessWidget {
   }
 
   TableRow _row(
-      String month,
-      String date,
-      String amount,
-      String status,
-      Color color,
-      ) {
+    String month,
+    String date,
+    String amount,
+    String status,
+    Color color,
+  ) {
     return TableRow(
       children: [
+        Padding(padding: const EdgeInsets.all(10), child: CustomText(month)),
 
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: CustomText(month),
-        ),
+        Padding(padding: const EdgeInsets.all(10), child: CustomText(date)),
 
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: CustomText(date),
-        ),
-
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: CustomText(amount),
-        ),
+        Padding(padding: const EdgeInsets.all(10), child: CustomText(amount)),
 
         Padding(
           padding: const EdgeInsets.all(10),
@@ -297,7 +281,6 @@ class RepaymentSchedulePage extends StatelessWidget {
         spacing: 12,
         runSpacing: 12,
         children: [
-
           _btn(Icons.payment, "Record Payment"),
           _btn(Icons.notifications_active, "Send Reminder"),
           _btn(Icons.edit, "Adjust Schedule"),

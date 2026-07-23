@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loan_admin/bloc/users_bloc.dart';
@@ -22,7 +21,6 @@ class UsersPage extends StatefulWidget {
 }
 
 class _UsersPageState extends State<UsersPage> {
-
   @override
   void initState() {
     // TODO: implement initState
@@ -40,12 +38,8 @@ class _UsersPageState extends State<UsersPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 12,
         children: [
+          HeaderText("Users Management", fontSize: 24),
 
-          HeaderText(
-            "Users Management",
-            fontSize: 24
-          ),
-          
           CustomText(
             'Review and manage users on this platforms',
             textColor: Colors.grey.shade700,
@@ -53,23 +47,23 @@ class _UsersPageState extends State<UsersPage> {
 
           Expanded(
             child: BlocBuilder<UsersCubit, UsersState>(
-              builder: (_, state){
-
-                if(state is UsersLoading || state is UsersInitial){
+              builder: (_, state) {
+                if (state is UsersLoading || state is UsersInitial) {
                   return LoadingPlaceholder();
                 }
 
-                if(state is UsersError){
+                if (state is UsersError) {
                   return MessagePlaceholder.error(
                     message: state.message,
-                    onButtonPressed: () => context.read<UsersCubit>().fetchUsers(),
+                    onButtonPressed: () =>
+                        context.read<UsersCubit>().fetchUsers(),
                   );
                 }
 
                 return _buildContent();
-              }
+              },
             ),
-          )
+          ),
         ],
       ),
     );
@@ -81,7 +75,6 @@ class _UsersPageState extends State<UsersPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           _buildStatistics(),
 
           const SizedBox(height: 24),
@@ -96,15 +89,11 @@ class _UsersPageState extends State<UsersPage> {
     );
   }
 
-
-
   Widget _buildStatistics() {
-    
     UsersLoaded loaded = context.read<UsersCubit>().state as UsersLoaded;
-    
+
     return Row(
       children: [
-
         Expanded(
           child: _statCard(
             "Total Users",
@@ -159,12 +148,14 @@ class _UsersPageState extends State<UsersPage> {
       ),
       child: Row(
         children: [
-
           CustomButton.withIcon(
             'Add User',
             onPressed: () => showDialog(
               context: context,
-              builder: (_) => CreateUserDialog()
+              builder: (_) => BlocProvider.value(
+                value: context.read<UsersCubit>(),
+                child: CreateUserDialog()
+              ),
             ),
             icon: Icons.add,
           ),
@@ -200,18 +191,9 @@ class _UsersPageState extends State<UsersPage> {
                 ),
               ),
               items: const [
-                DropdownMenuItem(
-                  value: "All Roles",
-                  child: Text("All Roles"),
-                ),
-                DropdownMenuItem(
-                  value: "Student",
-                  child: Text("Student"),
-                ),
-                DropdownMenuItem(
-                  value: "Admin",
-                  child: Text("Admin"),
-                ),
+                DropdownMenuItem(value: "All Roles", child: Text("All Roles")),
+                DropdownMenuItem(value: "Student", child: Text("Student")),
+                DropdownMenuItem(value: "Admin", child: Text("Admin")),
               ],
               onChanged: (_) {},
             ),
@@ -236,14 +218,8 @@ class _UsersPageState extends State<UsersPage> {
                   value: "All Status",
                   child: Text("All Status"),
                 ),
-                DropdownMenuItem(
-                  value: "Active",
-                  child: Text("Active"),
-                ),
-                DropdownMenuItem(
-                  value: "Suspended",
-                  child: Text("Suspended"),
-                ),
+                DropdownMenuItem(value: "Active", child: Text("Active")),
+                DropdownMenuItem(value: "Suspended", child: Text("Suspended")),
               ],
               onChanged: (_) {},
             ),
@@ -254,7 +230,6 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   Widget _buildUsersTable() {
-
     UsersLoaded usersLoaded = context.read<UsersCubit>().state as UsersLoaded;
 
     return Container(
@@ -265,13 +240,11 @@ class _UsersPageState extends State<UsersPage> {
       ),
       child: Column(
         children: [
-
           _tableHeader(),
 
           const Divider(height: 30),
 
-          ...usersLoaded.users.map(
-                (user) => UserRow(user: user)),
+          ...usersLoaded.users.map((user) => UserRow(user: user)),
         ],
       ),
     );
@@ -280,73 +253,45 @@ class _UsersPageState extends State<UsersPage> {
   Widget _tableHeader() {
     return Row(
       children: const [
-
         Expanded(
           flex: 2,
-          child: CustomText(
-            "User ID(username)",
-            fontWeight: FontWeight.bold,
-          ),
+          child: CustomText("User ID(username)", fontWeight: FontWeight.bold),
         ),
 
         Expanded(
           flex: 3,
-          child: CustomText(
-            "Last Name",
-            fontWeight: FontWeight.bold,
-          ),
+          child: CustomText("Last Name", fontWeight: FontWeight.bold),
         ),
 
         Expanded(
           flex: 4,
-          child: CustomText(
-            "First Name(s)",
-            fontWeight: FontWeight.bold,
-          ),
+          child: CustomText("First Name(s)", fontWeight: FontWeight.bold),
         ),
 
         Expanded(
           flex: 3,
-          child: CustomText(
-            "Email",
-            fontWeight: FontWeight.bold,
-          ),
+          child: CustomText("Email", fontWeight: FontWeight.bold),
         ),
 
         Expanded(
           flex: 2,
-          child: CustomText(
-            "Role",
-            fontWeight: FontWeight.bold,
-          ),
+          child: CustomText("Role", fontWeight: FontWeight.bold),
         ),
 
         Expanded(
           flex: 2,
-          child: CustomText(
-            "Status",
-            fontWeight: FontWeight.bold,
-          ),
+          child: CustomText("Status", fontWeight: FontWeight.bold),
         ),
 
         Expanded(
           flex: 2,
-          child: CustomText(
-            "Actions",
-            fontWeight: FontWeight.bold,
-          ),
+          child: CustomText("Actions", fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 
-
-  Widget _statCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
+  Widget _statCard(String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -355,14 +300,10 @@ class _UsersPageState extends State<UsersPage> {
       ),
       child: Row(
         children: [
-
           CircleAvatar(
             radius: 24,
             backgroundColor: color.withOpacity(.1),
-            child: Icon(
-              icon,
-              color: color,
-            ),
+            child: Icon(icon, color: color),
           ),
 
           const SizedBox(width: 14),
@@ -370,19 +311,11 @@ class _UsersPageState extends State<UsersPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              CustomText(
-                value,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
+              CustomText(value, fontWeight: FontWeight.bold, fontSize: 20),
 
               const SizedBox(height: 4),
 
-              CustomText(
-                title,
-                textColor: Colors.grey,
-              ),
+              CustomText(title, textColor: Colors.grey),
             ],
           ),
         ],
@@ -391,10 +324,7 @@ class _UsersPageState extends State<UsersPage> {
   }
 }
 
-
-
 class UserRow extends StatelessWidget {
-
   final User user;
 
   const UserRow({super.key, required this.user});
@@ -405,59 +335,29 @@ class UserRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         children: [
-
           //the user's username
-          Expanded(
-            flex: 2,
-            child: CustomText(
-              user.username,
-            ),
-          ),
-
+          Expanded(flex: 2, child: CustomText(user.username)),
 
           //last name
-          Expanded(
-            flex: 3,
-            child: CustomText(
-              user.lastName,
-            ),
-          ),
+          Expanded(flex: 3, child: CustomText(user.lastName)),
 
           //first names
-          Expanded(
-            flex: 3,
-            child: CustomText(
-              user.firstName,
-            ),
-          ),
-
+          Expanded(flex: 3, child: CustomText(user.firstName)),
 
           //the user's email.
-          Expanded(
-            flex: 4,
-            child: CustomText(
-              user.email,
-            ),
-          ),
-
+          Expanded(flex: 4, child: CustomText(user.email)),
 
           //the user's role.
           Expanded(
             flex: 2,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.green.shade50,
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Center(
-                child: CustomText(
-                  user.role,
-                  textColor: Colors.green,
-                ),
+                child: CustomText(user.role, textColor: Colors.green),
               ),
             ),
           ),
@@ -467,19 +367,13 @@ class UserRow extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(30),
               ),
               child: const Center(
-                child: CustomText(
-                  "Active",
-                  textColor: Colors.blue,
-                ),
+                child: CustomText("Active", textColor: Colors.blue),
               ),
             ),
           ),
@@ -488,28 +382,33 @@ class UserRow extends StatelessWidget {
             flex: 2,
             child: Row(
               children: [
-
                 IconButton(
                   onPressed: () {
-                    if(user.role.toLowerCase() == 'student'){
-                      context.read<NavigationCubit>().push(StudentUserProfilePage());
-                    }else{
-                      context.read<NavigationCubit>().push(AdminUserProfilePage());
+                    if (user.role.toLowerCase() == 'student') {
+                      context.read<NavigationCubit>().push(
+                        BlocProvider(
+                          create: (_) => UserProfileCubit(user),
+                          child: StudentUserProfilePage()
+                        ),
+                      );
+                    } else {
+                      context.read<NavigationCubit>().push(
+                        BlocProvider( 
+                          create: (_) => UserProfileCubit(user),
+                          child: AdminUserProfilePage()
+                        ),
+                      );
                     }
                   },
-                  icon: const Icon(
-                    Icons.visibility_outlined,
-                  ),
+                  icon: const Icon(Icons.visibility_outlined),
                 ),
 
                 IconButton(
                   onPressed: () => showModalBottomSheet(
                     context: context,
-                    builder: (_) => _UserActionContent(user: user)
+                    builder: (_) => _UserActionContent(user: user),
                   ),
-                  icon: const Icon(
-                    Icons.more_vert,
-                  ),
+                  icon: const Icon(Icons.more_vert),
                 ),
               ],
             ),
@@ -520,243 +419,204 @@ class UserRow extends StatelessWidget {
   }
 }
 
-
-
-
-
 class _UserActionContent extends StatelessWidget {
-
   final User user;
 
-  const _UserActionContent({
-    required this.user
-  });
+  const _UserActionContent({required this.user});
 
   @override
   Widget build(BuildContext context) {
+
+    bool isUserActive = user.status == 'active';
+
     return Container(
       height: 560,
-
+      padding: EdgeInsets.all(24),
       decoration: const BoxDecoration(
         color: Colors.white,
 
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(30),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
 
-      child: Padding(
-        padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
 
-        child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 80,
+              height: 6,
 
-          children: [
-
-            Center(
-              child: Container(
-                width: 80,
-                height: 6,
-
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius:
-                  BorderRadius.circular(50),
-                ),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(50),
               ),
             ),
+          ),
 
-            const SizedBox(height: 22),
+          const SizedBox(height: 22),
 
-            Row(
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 34,
+                backgroundColor: Colors.green.shade100,
+
+                child: CustomText(
+                  user.username[0].toUpperCase(),
+
+                  fontSize: 24,
+
+                  fontWeight: FontWeight.bold,
+
+                  textColor: Colors.green,
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+                    HeaderText('${user.lastName} ${user.firstName}'),
+
+                    const SizedBox(height: 4),
+
+                    CustomText(user.email, textColor: Colors.grey),
+
+                    const SizedBox(height: 6),
+
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+
+                          decoration: BoxDecoration(
+                            color: true
+                                ? Colors.green.shade50
+                                : Colors.red.shade50,
+
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+
+                          child: CustomText(
+                            'active',
+                            textColor: Colors.green.shade600,
+                          ),
+                        ),
+
+                        const SizedBox(width: 8),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+
+                          child: CustomText(user.role),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 28),
+
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 3,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: 2.7,
               children: [
-
-                CircleAvatar(
-                  radius: 34,
-                  backgroundColor:
-                  Colors.green.shade100,
-
-                  child: CustomText(
-                    user.username[0].toUpperCase(),
-
-                    fontSize: 24,
-
-                    fontWeight:
-                    FontWeight.bold,
-
-                    textColor: Colors.green,
-                  ),
+                //TODO: handle viewing the user's profile
+                _action(
+                  context,
+                  icon: Icons.person,
+                  title: "View Profile",
+                  onTap: () => handleViewProfile(context),
                 ),
 
-                const SizedBox(width: 16),
+                // _action(
+                //   context,
+                //   icon:
+                //   Icons.edit,
+                //   title:
+                //   "Edit User",
+                //   onTap: () {},
+                // ),
 
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
-
-                    children: [
-
-                      HeaderText(
-                        '${user.lastName} ${user.firstName}',
-                      ),
-
-                      const SizedBox(
-                        height: 4,
-                      ),
-
-                      CustomText(
-                        user.email,
-                        textColor:
-                        Colors.grey,
-                      ),
-
-                      const SizedBox(
-                        height: 6,
-                      ),
-
-                      Row(
-                        children: [
-
-                          Container(
-                            padding:
-                            const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-
-                            decoration:
-                            BoxDecoration(
-                              color: true ? Colors.green.shade50 : Colors.red.shade50,
-
-                              borderRadius:
-                              BorderRadius
-                                  .circular(
-                                50,
-                              ),
-                            ),
-
-                            child:
-                            CustomText(
-                              'active',
-                              textColor: Colors.green.shade600
-                            ),
-                          ),
-
-                          const SizedBox( width: 8),
-
-                          Container(
-                            padding:
-                            const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical:6,
-                            ),
-
-                            decoration:
-                            BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(50,),
-                            ),
-
-                            child:
-                            CustomText(
-                              user.role,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                //TODO: handle password reset.
+                _action(
+                  context,
+                  icon: Icons.lock_reset,
+                  title: "Reset Password",
+                  onTap: () {},
                 ),
-              ],
-            ),
 
-            const SizedBox(height: 28),
-
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 3,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                childAspectRatio: 2.7,
-
-                children: [
-
+                //change the user's role.
+                if (user.role != 'student')
                   _action(
-                    context,
-                    icon: Icons.person,
-                    title: "View Profile",
-                    onTap: () {},
-                  ),
-
-                  // _action(
-                  //   context,
-                  //   icon:
-                  //   Icons.edit,
-                  //   title:
-                  //   "Edit User",
-                  //   onTap: () {},
-                  // ),
-
-                  _action(
-                    context,
-                    icon: Icons.lock_reset,
-                    title: "Reset Password",
-                    onTap: () {},
-                  ),
-
-                  if(user.role != 'student')_action(
                     context,
                     icon: Icons.badge,
                     title: "Change Role",
                     onTap: () => showDialog(
                       context: context,
-                      builder: (_) => ChangeUserRoleDialog(
-                        userName: user.username,
-                        email: user.email,
-                        currentRole: user.role
-                      )
+                      builder: (_) => ChangeUserRoleDialog(user: user),
                     ),
                   ),
 
-                  if(user.role == 'student')_action(
+                if (user.role == 'student')
+                  _action(
                     context,
                     icon: Icons.notifications,
                     title: "Notify User",
                     onTap: () => showDialog(
                       context: context,
-                      builder: (_) => NotifyUserDialog(userName: user.username, userEmail: user.email)
+                      builder: (_) =>
+                          NotifyUserDialog.user(username: user.username),
                     ),
                   ),
 
+                //account activation or deactivating
+                _action(
+                  context,
+                  icon: isUserActive ? Icons.block : Icons.check,
+                  title: isUserActive ? "Deactivate" : "Activate",
+                  color: isUserActive ? Colors.red : Colors.green,
+                  onTap: () {},
+                ),
 
-                  //account activation or deactivating
-                  _action(
-                    context,
-                    icon: true ? Icons.block : Icons.check,
-                    title: true ? "Deactivate" : "Activate",
-                    color: true ? Colors.red : Colors.green,
-                    onTap: () {},
-                  ),
-
-                  // _action(
-                  //   context,
-                  //   icon: Icons.delete,
-                  //   title: "Delete User",
-                  //   color: Colors.red,
-                  //   onTap: () {},
-                  // ),
-                ],
-              ),
+                // _action(
+                //   context,
+                //   icon: Icons.delete,
+                //   title: "Delete User",
+                //   color: Colors.red,
+                //   onTap: () {},
+                // ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _action(BuildContext context, {
+  Widget _action(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
@@ -771,52 +631,57 @@ class _UserActionContent extends StatelessWidget {
       },
 
       child: Container(
-        padding:
-        const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(18),
 
         decoration: BoxDecoration(
-          color:
-          color.withOpacity(.08),
+          color: color.withOpacity(.08),
 
-          borderRadius:
-          BorderRadius.circular(
-            18,
-          ),
+          borderRadius: BorderRadius.circular(18),
         ),
 
         child: Row(
           children: [
-
             Container(
               height: 42,
               width: 42,
 
               decoration: BoxDecoration(
-                color:
-                color.withOpacity(.15,),
+                color: color.withOpacity(.15),
                 shape: BoxShape.circle,
               ),
 
-              child: Icon(
-                icon,
-                color: color,
-              ),
+              child: Icon(icon, color: color),
             ),
 
-            const SizedBox(
-              width: 12,
-            ),
+            const SizedBox(width: 12),
 
-            Expanded(
-              child: CustomText(
-                title,
-                fontWeight:
-                FontWeight.w600,
-              ),
-            ),
+            Expanded(child: CustomText(title, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
     );
   }
+
+
+
+  void handleViewProfile(BuildContext context){
+
+    if (user.role.toLowerCase() == 'student') {
+      context.read<NavigationCubit>().push(
+        BlocProvider(
+          create: (_) => UserProfileCubit(user),
+          child: StudentUserProfilePage()
+        ),
+      );
+    } else {
+      context.read<NavigationCubit>().push(
+        BlocProvider( 
+          create: (_) => UserProfileCubit(user),
+          child: AdminUserProfilePage()
+        ),
+      );
+    }
+  }
+
+  void updateUserStatus() {}
 }
