@@ -1,46 +1,98 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_admin/bloc/loans_bloc.dart';
+import 'package:loan_admin/components/placeholders.dart';
 import 'package:loan_admin/components/shared_functions.dart';
 import 'package:loan_admin/components/text.dart';
 import 'package:loan_admin/models/models.dart';
+import 'package:loan_admin/pages/loan_management/manual_payment_page.dart';
 
-class LoanDetailPage extends StatelessWidget {
-  final Loan loan;
-  const LoanDetailPage({super.key, required this.loan});
+class LoanDetailPage extends StatefulWidget {
+  const LoanDetailPage({super.key});
+
+  @override
+  State<LoanDetailPage> createState() => _LoanDetailPageState();
+}
+
+class _LoanDetailPageState extends State<LoanDetailPage> {
+  late final Loan _loan;
+  LoanDetailLoaded? loadedState;
+
+  @override
+  void initState() {
+    super.initState();
+    _loan = context.read<LoanDetailCubit>().loan;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF8FAFC),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 20,
-          children: [
-            
-            FragementHeader(
-              title: 'Loan Detail',
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        spacing: 24,
+        children: [
+          FragementHeader(title: 'Loan Detail'),
+
+          Expanded(
+            child: BlocBuilder<LoanDetailCubit, LoanDetailState>(
+              builder: (_, state) {
+                if (state is LoanDetailInitial || state is LoanDetailLoading) {
+                  return LoadingPlaceholder();
+                }
+
+                if (state is LoanDetailError) {
+                  return MessagePlaceholder.error(
+                    message: state.message,
+                    onButtonPressed: context
+                        .read<LoanDetailCubit>()
+                        .fetchLoanInformation,
+                  );
+                }
+
+                loadedState = state as LoanDetailLoaded;
+
+                return _buildContent();
+              },
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // ================= LOAN HEADER =================
-            _loanHeader(),
+  SingleChildScrollView _buildContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 20,
+        children: [
+          // ================= LOAN HEADER =================
+          _loanHeader(),
 
-            // ================= SUMMARY CARDS =================
-            _summaryCards(),
+          // ================= SUMMARY CARDS =================
+          _summaryCards(),
 
-            // ================= BORROWER INFO =================
-            _borrowerInfo(context),
+          // ================= BORROWER INFO =================
+          _borrowerInfo(context),
 
-            // ================= LOAN BREAKDOWN =================
-            _loanBreakdown(),
+          // ================= LOAN BREAKDOWN =================
+          _loanBreakdown(),
 
-            // ================= REPAYMENT SCHEDULE =================
-            _repaymentSchedule(),
+          // ================= REPAYMENT SCHEDULE =================
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Expanded(flex: 3, child: _repaymentSchedule()),
+              const SizedBox(width: 12),
+              Expanded(flex: 1, child: _adminActions()),
+            ],
+          ),
 
-            // ================= ADMIN ACTIONS =================
-            _adminActions(),
-          ],
-        ),
+          // ================= ADMIN ACTIONS =================
+        ],
       ),
     );
   }
@@ -65,7 +117,7 @@ class LoanDetailPage extends StatelessWidget {
                 SizedBox(height: 6),
 
                 CustomText(
-                  loan.loanId,
+                  _loan.loanId,
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
                 ),
@@ -80,7 +132,7 @@ class LoanDetailPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
             ),
             child: CustomText(
-              loan.status.toUpperCase(),
+              _loan.status.toUpperCase(),
               textColor: Colors.green,
               fontWeight: FontWeight.bold,
             ),
@@ -94,28 +146,26 @@ class LoanDetailPage extends StatelessWidget {
   Widget _summaryCards() {
     double amountRemaining = 0;
 
-    if (['active', 'disbursed'].contains(loan.status.toLowerCase())) {
-      amountRemaining = loan.amountRemaing;
+    if (['active', 'disbursed'].contains(_loan.status.toLowerCase())) {
+      amountRemaining = _loan.amountRemaing;
     }
 
     return Row(
       spacing: 12,
       children: [
-
         Expanded(
           child: _summaryCard(
             "Approved Amount",
-            "GHS ${loan.approvedAmount}",
+            "GHS ${_loan.approvedAmount}",
             Icons.payments,
             Colors.purpleAccent,
           ),
         ),
 
-
         Expanded(
           child: _summaryCard(
             "Interest",
-            "${loan.interestRate}%",
+            "${_loan.interestRate}%",
             Icons.percent,
             Colors.green,
           ),
@@ -124,12 +174,12 @@ class LoanDetailPage extends StatelessWidget {
         Expanded(
           child: _summaryCard(
             "Principal (Total Payable)",
-            "GHS ${loan.totalAmount}",
+            "GHS ${_loan.totalAmount}",
             Icons.payments,
             Colors.blue,
           ),
         ),
-        
+
         Expanded(
           child: _summaryCard(
             "Outstanding",
@@ -138,12 +188,11 @@ class LoanDetailPage extends StatelessWidget {
             Colors.orange,
           ),
         ),
-        
-        
+
         Expanded(
           child: _summaryCard(
             "Duration",
-            "${loan.duration} Months",
+            "${_loan.duration} Months",
             Icons.timer,
             Colors.purple,
           ),
@@ -180,11 +229,10 @@ class LoanDetailPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-
           CircleAvatar(
-            radius: 30, 
+            radius: 30,
             backgroundColor: Colors.green.shade100,
-            child: Icon(Icons.person, color: Colors.green.shade700)
+            child: Icon(Icons.person, color: Colors.green.shade700),
           ),
 
           const SizedBox(width: 16),
@@ -194,14 +242,14 @@ class LoanDetailPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CustomText(
-                  loan.studentName,
+                  _loan.studentName,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
 
                 SizedBox(height: 6),
 
-                CustomText(loan.studentId, textColor: Colors.grey),
+                CustomText(_loan.studentId, textColor: Colors.grey),
                 CustomText(
                   "University of Energy and Natural Resources",
                   textColor: Colors.grey,
@@ -213,12 +261,12 @@ class LoanDetailPage extends StatelessWidget {
           ElevatedButton(
             onPressed: () => SharedFunctions.handleOpenStudentProfile(
               context,
-              studentId: loan.studentId
-            ), 
-            style: ElevatedButton.styleFrom(  
-              backgroundColor: Colors.green.shade50
+              studentId: _loan.studentId,
             ),
-            child: CustomText('View Profile', textColor: Colors.green.shade700,)
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.shade50,
+            ),
+            child: CustomText('View Profile', textColor: Colors.green.shade700),
           ),
         ],
       ),
@@ -244,13 +292,13 @@ class LoanDetailPage extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          _row("Loan Amount", "GHS ${loan.approvedAmount}"),
-          _row("Interest Rate", "${loan.interestRate}%"),
-          _row("Total Payable", "GHS ${loan.totalAmount}"),
+          _row("Loan Amount", "GHS ${_loan.approvedAmount}"),
+          _row("Interest Rate", "${_loan.interestRate}%"),
+          _row("Total Payable", "GHS ${_loan.totalAmount}"),
 
           //TODO: add these fields later.
-          _row("Paid So Far", "GHS ${loan.amountPaid}"),
-          _row("Remaining", "GHS ${loan.amountRemaing}"),
+          _row("Paid So Far", "GHS ${_loan.amountPaid}"),
+          _row("Remaining", "GHS ${_loan.amountRemaing}"),
         ],
       ),
     );
@@ -280,24 +328,35 @@ class LoanDetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const CustomText(
-            "Repayment Schedule",
+            "Loan Payments",
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
 
           const SizedBox(height: 16),
 
-          Table(
-            border: TableBorder.all(color: Colors.grey.shade200),
-            children: [
-              _tableRow(["Month", "Amount", "Status"]),
+          if (loadedState!.loanPayments.isEmpty)
+            SizedBox(
+              height: 200,
+              child: MessagePlaceholder(
+                icon: CupertinoIcons.cube_box,
+                iconColor: Colors.green.shade700,
+                message: 'No repayments yet',
+              ),
+            ),
 
-              _tableRow(["Jan", "GHS 800", "Paid"]),
-              _tableRow(["Feb", "GHS 800", "Paid"]),
-              _tableRow(["Mar", "GHS 800", "Pending"]),
-              _tableRow(["Apr", "GHS 800", "Pending"]),
-            ],
-          ),
+          if (loadedState!.loanPayments.isEmpty)
+            Table(
+              border: TableBorder.all(color: Colors.grey.shade200),
+              children: [
+                _tableRow(["Month", "Amount", "Status"]),
+
+                _tableRow(["Jan", "GHS 800", "Paid"]),
+                _tableRow(["Feb", "GHS 800", "Paid"]),
+                _tableRow(["Mar", "GHS 800", "Pending"]),
+                _tableRow(["Apr", "GHS 800", "Pending"]),
+              ],
+            ),
         ],
       ),
     );
@@ -335,15 +394,41 @@ class LoanDetailPage extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
+          Column(
+            spacing: 8,
             children: [
-              _actionButton("Record Payment", Icons.payment, Colors.green),
-              _actionButton("Restructure Loan", Icons.edit, Colors.orange),
-              _actionButton("Mark Completed", Icons.check_circle, Colors.blue),
-              _actionButton("Generate Report", Icons.bar_chart, Colors.purple),
-              _actionButton("Download Agreement", Icons.download, Colors.grey),
+              _actionButton(
+                onPressed: () {
+                   showDialog(
+                      context: context,
+                      builder: (_) => ManualPaymentDialog(loan: _loan),
+                    );
+                },
+                title: "Record Manual Payment",
+                icon: Icons.payment,
+                color: Colors.green,
+              ),
+
+              _actionButton(
+                onPressed: () =>
+                    SharedFunctions.handleMarkAsCompleted(context, loan: _loan),
+                title: "Mark Completed",
+                icon: Icons.check_circle,
+                color: Colors.blue,
+              ),
+
+              if (_loan.status == 'awaiting_disbursement')
+                _actionButton(
+                  icon: Icons.payments_rounded,
+                  title: 'Disburse Amount',
+                  color: Colors.blue.shade700,
+                  onPressed: () =>
+                      SharedFunctions.handleDisbursement(context, loan: _loan),
+                ),
+
+              // _actionButton("Restructure Loan", Icons.edit, Colors.orange),
+              //_actionButton("Generate Report", Icons.bar_chart, Colors.purple),
+              //_actionButton("Download Agreement", Icons.download, Colors.grey),
             ],
           ),
         ],
@@ -351,14 +436,19 @@ class LoanDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _actionButton(String title, IconData icon, Color color) {
+  Widget _actionButton({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         backgroundColor: color.withOpacity(0.1),
         foregroundColor: color,
         elevation: 0,
       ),
-      onPressed: () {},
+      onPressed: onPressed,
       icon: Icon(icon),
       label: Text(title),
     );

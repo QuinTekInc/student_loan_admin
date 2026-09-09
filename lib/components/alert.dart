@@ -32,21 +32,25 @@ Future<void> showAlertDialog({
   await showDialog(
     context: context,
     builder: (_) => AlertDialog(
+      constraints: BoxConstraints(maxWidth: 450),
       icon: icon == null ? null : Icon(icon, color: iconColor, size: 40),
-      title: title == null ? null : HeaderText(title),
-      content: SizedBox(
-        width: 450,
-        child: CustomText(contentText, softwrap: true),
+      title: title == null
+          ? null
+          : HeaderText(title, textAlignment: TextAlign.center),
+      content: CustomText(
+        contentText,
+        textAlignment: TextAlign.center,
+        softwrap: true,
       ),
 
       actions: actions != null && actions.isNotEmpty
-        ? actions
-        : [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: CustomText('CLOSE', textColor: iconColor),
-            ),
-          ],
+          ? actions
+          : [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: CustomText('CLOSE', textColor: iconColor),
+              ),
+            ],
     ),
   );
 }

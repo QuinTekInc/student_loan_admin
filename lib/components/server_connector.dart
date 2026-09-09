@@ -132,18 +132,17 @@ class WebSocketService {
   String _concatUrl(String endpoint) => 'ws://127.0.0.1:8000/$endpoint';
 
   void connect() async {
-    
     String token = (await SecureStorageServices.getAuthToken()) ?? '';
 
     print('[TOKEN FOR WEBSOCKET] - $token');
 
-    final uri = Uri.parse(_concatUrl(endpoint));
+    final finalEnpoint = _concatUrl('${endpoint}token=$token/');
+    print(finalEnpoint);
+
+    final uri = Uri.parse(finalEnpoint);
 
     try {
-      _socket = WebSocket(
-        uri,
-        headers: {'Authorization': 'Token ${token.trim()}'},
-      );
+      _socket = WebSocket(uri);
 
       isConnected = true;
 

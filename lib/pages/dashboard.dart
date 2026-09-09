@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loan_admin/bloc/dashboard_bloc.dart';
 import 'package:loan_admin/components/app_colors.dart';
 import 'package:loan_admin/components/placeholders.dart';
-import 'package:loan_admin/models/models.dart';
 import 'package:loan_admin/pages/notifications_page.dart';
 
 import '../components/text.dart';

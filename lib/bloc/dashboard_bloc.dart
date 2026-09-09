@@ -42,8 +42,13 @@ class DashboardCubit extends Cubit<DashboardState> {
     webSocketService.dataStream.listen(
       (data) {
         //NOTE THE DATA HAS ALREADY BEEN DECODED
-        DashboardModel dashboardModel = DashboardModel.fromJson(data);
-        emit(DashboardLoaded(dashboardModel));
+        try {
+          DashboardModel dashboardModel = DashboardModel.fromJson(data);
+          emit(DashboardLoaded(dashboardModel));
+        } catch (ex, trace) {
+          debugPrintStack(stackTrace: trace);
+          emit(DashboardError(ex.toString()));
+        }
       },
       onDone: reconnect, //recursive call to this same function
       cancelOnError: true,

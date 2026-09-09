@@ -67,7 +67,6 @@ class LoansCubit extends Cubit<LoansState> {
       }).toList();
 
       emit(LoansLoaded(updated));
-      
     } catch (ex, trace) {
       debugPrint(ex.toString());
       debugPrintStack(stackTrace: trace);
@@ -111,7 +110,12 @@ class LoanDetailInitial extends LoanDetailState {}
 
 class LoanDetailLoading extends LoanDetailState {}
 
-class LoanDetailLoaded extends LoanDetailState {}
+class LoanDetailLoaded extends LoanDetailState {
+  final Map<String, dynamic>? loanInformation;
+  final List<LoanPayment> loanPayments;
+
+  LoanDetailLoaded({required this.loanInformation, required this.loanPayments});
+}
 
 class LoanDetailError extends LoanDetailState {
   String message;
@@ -131,7 +135,11 @@ class LoanDetailCubit extends Cubit<LoanDetailState> {
 
     try {
       loanInformation = await Repository.fetchLoanInformation(loan.loanId);
-      emit(LoanDetailLoaded());
+      final loanPayments = await Repository.fetchLoanPayments(loan.loanId);
+      emit(LoanDetailLoaded(
+        loanInformation: loanInformation,
+        loanPayments: loanPayments
+      ));
     } catch (ex) {
       emit(LoanDetailError(ex.toString()));
     }

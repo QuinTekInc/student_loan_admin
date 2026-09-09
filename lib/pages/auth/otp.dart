@@ -1,12 +1,11 @@
-
 import 'package:flutter/material.dart';
+import 'package:loan_admin/components/server_connector.dart';
 
 class EmailVerificationPage extends StatefulWidget {
   const EmailVerificationPage({super.key});
 
   @override
-  State<EmailVerificationPage> createState() =>
-      _EmailVerificationPageState();
+  State<EmailVerificationPage> createState() => _EmailVerificationPageState();
 }
 
 class _EmailVerificationPageState extends State<EmailVerificationPage> {
@@ -50,10 +49,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Colors.green.shade700,
-            Colors.green.shade500,
-          ],
+          colors: [Colors.green.shade700, Colors.green.shade500],
         ),
         borderRadius: BorderRadius.circular(24),
       ),
@@ -92,7 +88,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
             color: Color(0x14000000),
             blurRadius: 20,
             offset: Offset(0, 10),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -112,33 +108,30 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
-                padding:
-                const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              onPressed: () {
+              onPressed: () async {
                 // TODO: verify OTP
               },
-              child: const Text(
-                "Verify",
-                style: TextStyle(fontSize: 16),
-              ),
+              child: const Text("Verify", style: TextStyle(fontSize: 16)),
             ),
           ),
 
           const SizedBox(height: 14),
 
           TextButton(
-            onPressed: () {
+            onPressed: () async {
+              await ServerConnector.getRequest('');
               // TODO: resend OTP
             },
             child: const Text(
               "Resend Code",
               style: TextStyle(color: Colors.green),
             ),
-          )
+          ),
         ],
       ),
     );

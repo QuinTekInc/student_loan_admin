@@ -109,14 +109,14 @@ class DashboardModel {
 
 class DashboardStat {
   final int totalStudents;
-  final int totalLoanedAmount;
+  //final int totalLoanedAmount;
   final int totalDisbursed;
   final int totalPaid;
   final int totalActiveLoans;
 
   DashboardStat({
     required this.totalStudents,
-    required this.totalLoanedAmount,
+    ///required this.totalLoanedAmount,
     required this.totalDisbursed,
     required this.totalPaid,
     required this.totalActiveLoans,
@@ -126,7 +126,7 @@ class DashboardStat {
     return DashboardStat(
       totalStudents: jsonMap['total_students'],
       totalActiveLoans: jsonMap['total_active_loans'], 
-      totalLoanedAmount: jsonMap['total_loaned_amount'],
+      //totalLoanedAmount: jsonMap['total_loaned_amount'],
       totalDisbursed: jsonMap['total_disbursed'],
       totalPaid: jsonMap['total_paid'], 
     );

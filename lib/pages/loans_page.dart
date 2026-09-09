@@ -397,7 +397,10 @@ class LoanActionsSheet extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(context); //close the modal dialog.
                     context.read<NavigationCubit>().push(
-                      LoanDetailPage(loan: loan),
+                      BlocProvider(  
+                        create: (_) => LoanDetailCubit(loan)..fetchLoanInformation(),
+                        child: LoanDetailPage(),
+                      )
                     );
                   },
                 ),
